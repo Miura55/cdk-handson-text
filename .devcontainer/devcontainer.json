@@ -1,0 +1,10 @@
+{
+    "name": "CDK Handson Text",
+    "dockerFile": "Dockerfile",
+    "features": {
+        "ghcr.io/devcontainers/features/docker-outside-of-docker": {
+            "version": "latest",
+            "dockerDashComposeVersion": "v2"
+        }
+    }
+}

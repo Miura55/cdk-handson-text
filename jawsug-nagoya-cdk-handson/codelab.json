@@ -1,0 +1,28 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2023-02-16T17:51:21Z",
+  "id": "jawsug-nagoya-cdk-handson",
+  "duration": 0,
+  "title": "JAWS-UG 名古屋 AWS CDKハンズオン",
+  "authors": "Koki Miura",
+  "summary": "CDKでAWSのアプリケーションを構築するハンズオンです",
+  "source": "1rM6EczQ3KLRypA-qQyS84mUvurKKPNvxUZVP_pQAOMY",
+  "theme": "web",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "web"
+  ],
+  "tags": [
+    "aws",
+    "cdk",
+    "jawsug",
+    "web"
+  ],
+  "feedback": "https://twitter.com/k_miura_io",
+  "url": "jawsug-nagoya-cdk-handson"
+}
