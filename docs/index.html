@@ -62,8 +62,8 @@
 <p>なお、リージョン違いでのトラブルを防ぐためAWSの作業はすべて<strong>ap-northeast-1(東京リージョン)</strong>で行います</p>
 <h2 is-upgraded>事前準備</h2>
 <ul>
-<li>AWSアカウント(まだ作成されてない方は<a href="https://aws.amazon.com/jp/register-flow/" target="_blank">https://aws.amazon.com/jp/register-flow/</a> を参考に登録してください)</li>
-<li>Gitpodのアカウント(<a href="https://www.gitpod.io" target="_blank">https://www.gitpod.io</a> から登録してください。GithubかGitlabまたはBItbucketのアカウントが必要です)</li>
+<li>AWSアカウント(IAMユーザーでログインしている場合は、AdministratorAccessポリシーが必要です。まだ作成されてない方は<a href="https://aws.amazon.com/jp/register-flow/" target="_blank">https://aws.amazon.com/jp/register-flow/</a> を参考に登録してください)</li>
+<li>Gitpodのアカウント(<a href="https://www.gitpod.io" target="_blank">https://www.gitpod.io</a> から登録してください。Github、Gitlab、BItbucketのアカウントが必要です)</li>
 </ul>
 <h2 is-upgraded>Gitpodを起動</h2>
 <p>まずは開発環境を用意します。通常、AWSのハンズオンであればCloud9を使うことが多いですが、今回はアプリケーションでVPCを使用するため、開発環境にGitpodというサービスを使用します。</p>
@@ -74,7 +74,7 @@
 <p>以下のようにVSCodeが起動できたら実行環境の用意は完了です。</p>
 <p class="image-container"><img style="width: 601.70px" src="img\\c0cbeb33d0eaef9d.png"></p>
 <h2 is-upgraded>アクセスキーを入手</h2>
-<p>GitpodからAWSへの接続に必要なアクセスキーを入手するためにIAMユーザーを作成します（IAMユーザーでログインしている場合はそのユーザーでアクセスキーを作成しても構いません）</p>
+<p>GitpodからAWSへの接続に必要なアクセスキーを入手するためにIAMユーザーを作成します（AdministratorAccessポリシーのIAMユーザーでログインしている場合はそのユーザーでアクセスキーを作成しても構いません）</p>
 <p class="image-container"><img style="width: 601.70px" src="img\\a6a613c6ad4426a3.png"></p>
 <p>ポリシーは<strong>AdministratorAccess</strong>を選択します</p>
 <p class="image-container"><img style="width: 601.70px" src="img\\6e8299c970d28b35.png"></p>
@@ -439,7 +439,7 @@ yarn install</code></pre>
 <p>デプロイ前にビルドが正常に完了しているのか確認するため、Gitpod上でビルドしたページが表示されるか確認します。</p>
 <p>ビルドしたページを表示するには以下のコマンドを実行します。</p>
 <pre><code>yarn serve</code></pre>
-<p>実行するとプレビュー用サーバーが立ち上がります。立ち上がると、エディタの右下に以下のダイアログが表示されると思うので、 <code>Open Preview</code> をクリックしてエディタ上でブラウザを起動します。</p>
+<p>実行するとプレビュー用サーバーが立ち上がります。立ち上げると、エディタの右下に以下のダイアログが表示されると思うので、 <code>Open Preview</code> をクリックしてエディタ上でブラウザを起動します。</p>
 <p class="image-container"><img style="width: 453.00px" src="img\\f99e1b894c5ad1cb.png"></p>
 <p>エディタ上のブラウザでTodo Listの画面が表示されたらビルドは成功です。画面に何も表示されない場合は、画面を開くタイミングの問題もあるのでリロードを試してください。何度リロードしても表示されない場合は、環境変数で設定しているAPIのエンドポイントに誤りがある可能性があるので環境変数の設定を確認してください。</p>
 <p class="image-container"><img style="width: 601.70px" src="img\\6b38387596567547.png"></p>
@@ -589,7 +589,7 @@ arn:aws:cloudformation:ap-northeast-1:123456789000:stack/CdkHandsonFrontendStack
         <p>最後にハンズオンの片付けを行います。このハンズオンでは有料のサービスが使われているため、放置しておくとかなりの金額になるので忘れずに片付けを行いましょう。</p>
 <h2 is-upgraded>CDKで構築したリソースの削除</h2>
 <p>CDKで構築したリソースは以下のコマンドですべて削除することができます。</p>
-<p><code>npx cdk destroy --all </code></p>
+<pre><code>npx cdk destroy --all </code></pre>
 <p>もし、タイムアウトで削除に失敗する場合は先にフロントエンドのスタックを削除してから残りのスタックを削除すると成功します(APIスタックとデータベーススタックは連携しているので必ず同時に削除されます)。</p>
 <pre><code>npx cdk destroy CdkHandsonFrontendStack
 npx cdk destroy --all</code></pre>
@@ -632,6 +632,49 @@ CdkHandsonDatabaseStack: destroying... [3/3]
 <p>今回はCDKを使用してAWS上で動作するアプリケーションを構築していく流れを体験していただきました。CDKを使うことでAWSのコンソールを開かなくてもアプリケーションの構築が簡単にできることがお分かりいただけたと思います。</p>
 <p>CDKはコードでAWSのリソースを定義するだけではなく、アプリケーションのデプロイをサポートする機能も充実しているので使いこなすことでかなり開発効率が上がります。</p>
 <p>また削除のときにS3のバケットの中身を完全に削除できたりするなど、CloudFormationだとできない機能もあるのもCDKの魅力の一つです。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Appendix" duration="0">
+        <p>ここでは本編に関連した内容についてひたすら解説していきます。</p>
+<h2 is-upgraded>今回のハンズオンで作ったソースコード</h2>
+<p>今回のハンズオンのソースコードは以下のGithubレポジトリで公開しているのでハンズオンの復習に是非ご活用ください。また、ローカルの環境構築を簡単にできるDevcontainerの設定ファイルも用意しています。</p>
+<p><a href="https://github.com/Miura55/jawsug-nagoya-cdk-handson" target="_blank">https://github.com/Miura55/jawsug-nagoya-cdk-handson</a></p>
+<h3 is-upgraded>APIのコードについて軽く解説</h3>
+<p class="image-container"><img style="width: 601.70px" src="img\\a1beb692b5b79c5b.png"></p>
+<p>今回のハンズオンではFastAPIというPythonのWebフレームワークを使ってAPIを作成しています。FastAPIはPythonのWebフレームワークの中では比較的新しいフレームワークで、非同期処理に対応しています。Flaskに近い記法なのでFlask触ったことある方なら同じ感覚でAPIを実装できます。</p>
+<p>ハンズオンではAPIの動作確認にAPIドキュメントを使用していますが、これはFastAPIのデフォルトの機能として提供されており、リクエストとレスポンスのスキーマをAPIごとに定義するだけで効率よくAPIドキュメントを作ることができます。</p>
+<p>今回は取り上げませんでしたが、APIにデプロイするコンテナをローカルで確認できるように <code>api</code> ディレクトリ内にdocker-compose.yamlがあるので動作確認が手軽にできるようになります。</p>
+<h3 is-upgraded>フロントエンドのコードについて軽く解説</h3>
+<p class="image-container"><img style="width: 601.70px" src="img\\f60645b59446e824.png"></p>
+<p>フロントエンドにはフレームワークにReact、ビルドにViteを使用しています。ViteはWebpackに変わる比較的新しめのビルドツールでフランス語で「素早い」という意味があるようにビルドを高速化させることができます。</p>
+<p>ローカルでの動作確認するときと本番用にビルドするときで環境変数を使い分けることができるので、APIのURLなどを環境変数として定義すれば開発効率が上がります。今回のコードでは <code>todo-app/.env</code> で設定しているURLがローカル用、 <code>todo-app/.env.production.local</code> で設定しているURLがAWSのAPI Gateway用に設定するようにしています。ローカルのAPIについてはFastAPIのときに紹介したdocker-compose.yamlやDevcontainerで動かしてください。</p>
+<p>日本語のドキュメントがかなり充実しているので興味のある方は <a href="https://ja.vitejs.dev/guide/" target="_blank">https://ja.vitejs.dev/guide/</a> をチェックしてみてください。</p>
+<h2 is-upgraded>CDKのリソース名を環境ごとに切り分ける</h2>
+<p>CDKはただコードで環境構築できるだけじゃなくて同じ構成で複数の環境を用意できるのも特徴です。複数の環境に分けるときにはリソース名を環境ごとに指定したいときがあります(APIのドメイン設定とか)。よくあるやり方だと.envとかを使って環境変数を使いがちですが、CDKを使うときにはそのようなユースケースで役に立つ <strong>context</strong> というものがあります。</p>
+<p>contextはCDKのプロジェクトを作成したときに作られる <code>cdk.json</code> に以下のように環境ごとにリソース名を設定する事ができます。アクセストークンなどの機密情報でなければこのやり方だと効率よく変数管理できます。</p>
+<pre><code>  &#34;context&#34;: {
+    ...
+    &#34;environment&#34;: &#34;dev&#34;,
+    &#34;dev&#34; : {
+      &#34;account&#34;: &#34;123456789011&#34;,
+      &#34;region&#34;: &#34;ap-northeast-1&#34;
+    },
+    &#34;prod&#34; : {
+      &#34;account&#34;: &#34;123456789012&#34;,
+      &#34;region&#34;: &#34;ap-northeast-1&#34;
+    }
+  }
+</code></pre>
+<p>上記の設定であればスタックのコードでは以下の記述をすると環境ごとの設定値を簡単に呼び出せます。</p>
+<pre><code>const environment = this.node.tryGetContext(&#39;environment&#39;);
+const context = this.node.tryGetContext(environment);</code></pre>
+<p>また、<code>bin</code> ディレクトリ以下のスタックを定義するコード(今回であれば <code>bin/cdk-handson.ts</code> )でcontextを使いたいときは以下のコードで呼び出せます。</p>
+<pre><code>const environment = app.node.tryGetContext(&#39;environment&#39;);
+const context = app.node.tryGetContext(envrionment);</code></pre>
+<p>そして環境を指定してデプロイするときは以下のコマンドでデプロイできます。今回取り上げた例のようにAWSのアカウントを切り替えるときは <code>--profile</code> オプションを付けてprofile名も指定する必要があります。</p>
+<pre><code>cdk deploy -c environment=dev --profile [profile_name]</code></pre>
 
 
       </google-codelab-step>
