@@ -51,7 +51,7 @@
 <p>Step1ではFargate + API Gatewayを使ったAPIを構築します。</p>
 <p>Step2ではDynamoDBのテーブルを用意して、Step1で構築したAPIに接続できるようにします。</p>
 <p>Step3ではS3 + CloudFrontを使ってフロントエンドをホスティングしてStep1で構築したAPIで通信できるようにします。</p>
-<p class="image-container"><img style="width: 396.00px" src="img\\f56a944c40cfbef3.png"></p>
+<p class="image-container"><img style="width: 396.00px" src="img/f56a944c40cfbef3.png"></p>
 <p>今回構築するアプリケーションの構造がわかったところで、次のページから環境構築していきます。</p>
 
 
@@ -70,21 +70,21 @@
 <p>以下のレポジトリにアクセスします。</p>
 <p><a href="https://github.com/pahud/gitpod-workspace" target="_blank">https://github.com/pahud/gitpod-workspace</a></p>
 <p>READMEにある「ready-to-code」をクリックしてGitpodのワークスペースを起動します。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\9747b587fd715eb.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/9747b587fd715eb.png"></p>
 <p>以下のようにVSCodeが起動できたら実行環境の用意は完了です。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\c0cbeb33d0eaef9d.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/c0cbeb33d0eaef9d.png"></p>
 <h2 is-upgraded>アクセスキーを入手</h2>
 <p>GitpodからAWSへの接続に必要なアクセスキーを入手するためにIAMユーザーを作成します（AdministratorAccessポリシーのIAMユーザーでログインしている場合はそのユーザーでアクセスキーを作成しても構いません）</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\a6a613c6ad4426a3.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/a6a613c6ad4426a3.png"></p>
 <p>ポリシーは<strong>AdministratorAccess</strong>を選択します</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\6e8299c970d28b35.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/6e8299c970d28b35.png"></p>
 <p>作成したIAMユーザーをクリックして「セキュリティ認証情報」タブをクリックしてアクセスキーを作成します</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\c4c53e12ebf0cc08.png"></p>
-<p class="image-container"><img style="width: 601.70px" src="img\\85b170e1af3a9fb4.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/c4c53e12ebf0cc08.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/85b170e1af3a9fb4.png"></p>
 <p>使用目的はCLIを選択して、その後下に表示されるチェックボックスにチェックをいれて次へ進みます。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\8bd2081aa79671cf.png"></p>
-<p class="image-container"><img style="width: 601.70px" src="img\\6358eb6f48c75fdb.png"></p>
-<p>あとはデフォルトのままアクセスキーが取得できる画面まで進みます。アクセスキーの画面を閉じるとシークレットアクセスキーは2度と確認することができないので、忘れずにメモしておきます。<img style="width: 601.70px" src="img\\f09c5c517a0d1801.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/8bd2081aa79671cf.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/6358eb6f48c75fdb.png"></p>
+<p>あとはデフォルトのままアクセスキーが取得できる画面まで進みます。アクセスキーの画面を閉じるとシークレットアクセスキーは2度と確認することができないので、忘れずにメモしておきます。<img style="width: 601.70px" src="img/f09c5c517a0d1801.png"></p>
 <h2 is-upgraded>AWS CLIの設定をする</h2>
 <p>Gitpodに戻りターミナルで <code>aws configure</code> を実行し、AWSの認証情報を登録します。</p>
 <p>AWS Access Key IDには先程取得したアクセスキーを入力します。</p>
@@ -114,7 +114,7 @@ Default output format [None]: json</code></pre>
 }
 </code></pre>
 <p>ターミナルに貼り付けるときに以下のダイアログが表示されたらコピペを許可してもらっていいです。</p>
-<p class="image-container"><img style="width: 324.00px" src="img\\e7b575ff2486538e.png"></p>
+<p class="image-container"><img style="width: 324.00px" src="img/e7b575ff2486538e.png"></p>
 <h2 is-upgraded>CDKアプリを作成する</h2>
 <p>今回使用するGitpodの環境にはCDKのCLIがセットアップ済みなので、早速CDKアプリを用意します。CDKアプリを作るためには空のディレクトリを用意する必要があるので以下のコマンドでCDKアプリ用のディレクトリを用意します。</p>
 <p>なお、ここで作成したディレクトリ名でCDKアプリの構成ファイルが作成されるため、ディレクトリ名を間違えるとこの先の工程が実行できないので、打ち間違いにご注意ください。</p>
@@ -125,7 +125,7 @@ cd cdk-handson</code></pre>
 <p>空のディレクトリが用意できたところで以下のコマンドを実行しCDKアプリを用意します。</p>
 <pre><code>npx cdk init app --language typescript</code></pre>
 <p>実行後、 <code>cdk-handson</code> ディレクトリ配下に以下のファイル、フォルダが作成されたらCDKアプリの用意は完了です。もし結果が違う場合は作業ディレクトリに誤りが無いか確認してください。</p>
-<p class="image-container"><img style="width: 277.00px" src="img\\99c1130c6241bfcf.png"></p>
+<p class="image-container"><img style="width: 277.00px" src="img/99c1130c6241bfcf.png"></p>
 <h2 is-upgraded>Bootstrap</h2>
 <p>CDKでデプロイする前にAWS側でデプロイ時のデータを保持するためのリソースを用意する必要があります。これを <strong>Bootstrap</strong> といいます。</p>
 <p>環境構築の最後の作業として以下のコマンドでBootstrapを実行します。BootstrapはAWSのルートアカウント、リージョンにつき1回実行すればいいので、以前にCDKを使ったことあってリソースを削除していない場合はスキップしても問題ないです。</p>
@@ -134,7 +134,7 @@ cd cdk-handson</code></pre>
 <pre><code>CDKToolkit: creating CloudFormation changeset...
  ✅  Environment aws://123456789000/ap-northeast-1 bootstrapped.</code></pre>
 <p>ちなみにAWSのコンソールでCloudFormationを確認すると、以下のように「CDKToolkit」という名前のスタックが作られていますが、これがCDKでデプロイするときのデータを保持しておくリソースが作成されています。余裕がある方はどんなリソースが作成されいているか見てみるといいです。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\be01fd003e8cd03e.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/be01fd003e8cd03e.png"></p>
 <p>以上で環境構築は完了です。次のページからCDKを使ってAWSのアプリケーションを構築していきます。</p>
 
 
@@ -144,10 +144,10 @@ cd cdk-handson</code></pre>
         <p>ここからCDKを使ってアプリケーションを構築していきます。まずはVPCを構築してECS Fargateを使ったAPIを構築していきます。</p>
 <h2 is-upgraded>ソースコードをダウンロード</h2>
 <p>前のページで作成したCDKアプリのディレクトリ( <code>cdk-handson</code> )上で以下のコマンドを実行してAPIのソースコードをダウンロードして展開します。</p>
-<pre><code>wget -O api.zip https://github.com/Miura55/jawsug-nagoya-cdk-handson/releases/download/v0.0.2/api-asset-v0.0.2.zip
+<pre><code>wget -O api.zip https://github.com/Miura55/jawsug-nagoya-cdk-handson/releases/download/v1.0.0/api-asset-v1.0.0.zip
 unzip api.zip</code></pre>
 <p>展開して以下のように <code>cdk-handson</code> 配下に <code>api</code> ディレクトリが作成されたら問題ありません。</p>
-<p class="image-container"><img style="width: 280.00px" src="img\\30819a7b7380f293.png"></p>
+<p class="image-container"><img style="width: 280.00px" src="img/30819a7b7380f293.png"></p>
 <h2 is-upgraded>APIを構築するスタックのコード</h2>
 <p>APIのコードを用意できたら、 <code>cdk-handson/lib</code> 内に apiを構築するスタックのコードを作成します。ファイル名は <code>handson-api-stack.ts</code> です。もとから存在している <code>cdk-handson-stack.ts</code> は不要なのでファイル名を変更してもいいですし、削除して新規作成してもいいです。</p>
 <p><code>handson-api-stack.ts</code> に以下のコードをコピぺします。</p>
@@ -284,7 +284,7 @@ const apiStack = new ApiStack(app, &#39;CdkHandsonApiStack&#39;, {
 <p>実行するとAPIのコンテナイメージのビルドが実行されて先程Bootstrapで作成されたECRレポジトリにPushします。その後作成されるAWSのリソースが一覧で表示され、以下の質問が表示されるので、 <code>y</code> と入力してエンターキーを押すと次に進みます。</p>
 <pre><code>Do you wish to deploy these changes (y/n)? </code></pre>
 <p>以下のようにAWSのリソースが自動で構築されていきます。デプロイに時間がかかります。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\c769fd1d896111e0.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/c769fd1d896111e0.png"></p>
 <p>デプロイが完了し、以下のように出力が表示されたらデプロイは正常に完了しています。</p>
 <pre><code>Outputs:
 CdkHandsonApiStack.ApiEndpoint = https://odbhg8has3.execute-api.ap-northeast-1.amazonaws.com
@@ -299,12 +299,12 @@ CdkHandsonApiStack.FargateServiceServiceURL454545 = http://CdkHa-Farga-A3HZCNQBI
 }
 </code></pre>
 <p>今回デプロイしたAPIはAPIドキュメントを用意しています。APIドキュメントはブラウザで  <code>[CdkHandsonApiStack.ApiEndpoint]/docs</code> を入力すると開きます。ここにあるAPIが今回構築するアプリケーションで使うものです。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\70582ed6b21acf09.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/70582ed6b21acf09.png"></p>
 <p>先程に開いたJSONのAPIが <code>GET /</code> で、ALBのヘルスチェックやAPIの動作確認用途のAPIです。</p>
 <p>APIドキュメントで動作確認をするには、動作確認したいAPIのアコーディオンを開いて <code>Try it out</code> ボタンを押すと表示される <code>Execute</code> ボタンを押すことでAPIを実行することができます。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\4ae0216139898ba1.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/4ae0216139898ba1.png"></p>
 <p>その他のAPIはDynamoDBのデータを取得・書き込み・削除するAPIですが、このAPIは現状動作しないはずです。試しに <code>GET /messages</code> を実行してみると、以下のようにステータスコード <code>500</code> を返します。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\e06f4ebfdf8b5bd8.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/e06f4ebfdf8b5bd8.png"></p>
 <p>500を返す原因はデプロイしたAPIの中でDynamoDBにアクセスするためのロールが割り当てられてないのとそもそもまだDynamoDBのテーブルが作成されていないからです。</p>
 <p>というわけで次のステップでは、このDynamoDBのテーブルを作成して、このAPIに接続できるようにしていきます。</p>
 
@@ -403,13 +403,13 @@ arn:aws:cloudformation:ap-northeast-1123456789000:stack/CdkHandsonDatabaseStack/
 <p>デプロイが完了したので動作確認です。</p>
 <p>APIスタックの動作確認で使用したAPIドキュメントからAPIの動作確認をします。</p>
 <p>まずはデータを登録するために <code>POST /message</code> のアコーディオンを開いて、左側の <code>Try it out</code> ボタンをクリックします。クリックすると以下のリクエストボディの編集画面が表示されるので、<code>message</code> の値を好きな文字列に書き換えて、 <code>Execute</code> ボタンをクリックします。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\ba90d38c6d05a8a6.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/ba90d38c6d05a8a6.png"></p>
 <p>実行後以下のようにステータスコード <code>500</code> だったAPIが <code>200</code> を返すようになればデプロイは成功です。もし、失敗するようであればAWSのコンソールのFargateタスクからAPIのログを確認して見てください。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\25915864bf04d0d8.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/25915864bf04d0d8.png"></p>
 <p>同様の手順で <code>GET /messages</code> を実行すると以下のようにデータベースに登録したメッセージを取得することができます。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\84301b3493f0d46.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/84301b3493f0d46.png"></p>
 <p>このレスポンスにある <code>id</code> の値をコピーして <code>DELETE /message</code> のパラメータに貼り付けて実行するとデータを削除することができます。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\a341b88d6dcf66ea.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/a341b88d6dcf66ea.png"></p>
 <p>これで一通りAPIの動作確認ができてAPIは完成です。APIはできたので次のステップではフロントエンドをデプロイしてTodoアプリを動かせるようにします。</p>
 
 
@@ -419,10 +419,10 @@ arn:aws:cloudformation:ap-northeast-1123456789000:stack/CdkHandsonDatabaseStack/
         <p>このハンズオンの最後のステップとしてフロントエンドをデプロイするためのスタックを作成していきます。フロントエンドの表示にはS3にフロントエンドのコードを格納してCloudFrontでホスティングしていきます。</p>
 <h2 is-upgraded>ソースコードをダウンロード</h2>
 <p>前のページで作成したCDKアプリのディレクトリ( <code>cdk-handson</code> )上で以下のコマンドを実行してAPIのソースコードをダウンロードして展開します。</p>
-<pre><code>wget -O todo-app.zip https://github.com/Miura55/jawsug-nagoya-cdk-handson/releases/download/v0.0.2/todo-app-asset-v0.0.2.zip
+<pre><code>wget -O todo-app.zip https://github.com/Miura55/jawsug-nagoya-cdk-handson/releases/download/v1.0.0/todo-app-asset-v1.0.0.zip
 unzip todo-app.zip</code></pre>
 <p>展開して以下のように <code>cdk-handson</code> 配下に <code>todo-app</code> ディレクトリが作成されたら問題ありません。</p>
-<p class="image-container"><img style="width: 268.00px" src="img\\6d3fd70ed5a6aa56.png"></p>
+<p class="image-container"><img style="width: 268.00px" src="img/6d3fd70ed5a6aa56.png"></p>
 <h2 is-upgraded>フロントエンドのモジュールをインストール</h2>
 <p>次の作業をする前にフロントエンドのモジュールをインストールします。 ターミナルを使い以下のコマンドで<code>cdk-handson/todo-app</code> ディレクトリに移動し、必要なモジュールをインストールします。</p>
 <pre><code>cd /workspace/gitpod-workspace/cdk-handson/todo-app
@@ -434,15 +434,15 @@ yarn install</code></pre>
 <p>これでビルドするための準備ができたので、<code>cdk-handson/todo-app</code> 上で以下のコマンドでビルドを実行します。</p>
 <pre><code>yarn build</code></pre>
 <p>コマンド終了後に <code>todo-app</code> ディレクトリ上に <code>build</code> ディレクトリが作成されていたらビルドは正常に完了しています。</p>
-<p class="image-container"><img style="width: 280.00px" src="img\\e7455d97d9dd363.png"></p>
+<p class="image-container"><img style="width: 280.00px" src="img/e7455d97d9dd363.png"></p>
 <h2 is-upgraded>Gitpod上で動作確認</h2>
 <p>デプロイ前にビルドが正常に完了しているのか確認するため、Gitpod上でビルドしたページが表示されるか確認します。</p>
 <p>ビルドしたページを表示するには以下のコマンドを実行します。</p>
 <pre><code>yarn serve</code></pre>
 <p>実行するとプレビュー用サーバーが立ち上がります。立ち上げると、エディタの右下に以下のダイアログが表示されると思うので、 <code>Open Preview</code> をクリックしてエディタ上でブラウザを起動します。</p>
-<p class="image-container"><img style="width: 453.00px" src="img\\f99e1b894c5ad1cb.png"></p>
+<p class="image-container"><img style="width: 453.00px" src="img/f99e1b894c5ad1cb.png"></p>
 <p>エディタ上のブラウザでTodo Listの画面が表示されたらビルドは成功です。画面に何も表示されない場合は、画面を開くタイミングの問題もあるのでリロードを試してください。何度リロードしても表示されない場合は、環境変数で設定しているAPIのエンドポイントに誤りがある可能性があるので環境変数の設定を確認してください。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\6b38387596567547.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/6b38387596567547.png"></p>
 <p>無事に表示されたら、APIが設定されているのでテキストボックスになにかメッセージを入力して追加することもできますし、削除もできますので確認してみてもいいです。</p>
 <p>動作確認が終わったらプレビューサーバーを立ち上げているサーバーを <code>Ctrl + C</code> で終了します。</p>
 <p>これでデプロイ前の動作確認は完了です。</p>
@@ -464,7 +464,8 @@ export class FrontendStack extends cdk.Stack {
     const webBucket = new Bucket(this, &#39;WebBucket&#39;, {
       websiteIndexDocument: &#39;index.html&#39;,
       websiteErrorDocument: &#39;index.html&#39;,
-      removalPolicy: cdk.RemovalPolicy.DESTROY
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true
     });
 
     // CloudFrontのOrigin Access Identityを作成する
@@ -578,7 +579,7 @@ arn:aws:cloudformation:ap-northeast-1:123456789000:stack/CdkHandsonFrontendStack
 </code></pre>
 <h2 is-upgraded>動作確認</h2>
 <p>デプロイができたところで動作確認です。先程スタックをデプロイしたときの出力にあった、 <code>CdkHandsonFrontendStack.CloudFrontURL</code> の値にあるCloudFrontのURLをブラウザで開いて以下のようにTodoアプリが表示されたらフロントエンドのデプロイは正常に完了です。</p>
-<p class="image-container"><img style="width: 539.00px" src="img\\4b1b9fc966c170be.png"></p>
+<p class="image-container"><img style="width: 539.00px" src="img/4b1b9fc966c170be.png"></p>
 <p>今回のハンズオンで構築するアプリケーションはこれで完成です。お疲れ様でした！</p>
 <p>ここまでできたら、最後に片付けを行います。次のページで片付けの方法を紹介します。</p>
 
@@ -609,25 +610,25 @@ CdkHandsonDatabaseStack: destroying... [3/3]
 <p>ただし、CDKを使う予定がある方や現在CDKを使っている方は次にCDKを使うときにエラーになるので絶対に削除しないでください。</p>
 <h3 is-upgraded>ECRの中身を削除</h3>
 <p>AWSのコンソールでECRを開き Repositoriesをクリックします。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\c524c1f74bc60a6.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/c524c1f74bc60a6.png"></p>
 <p><code>cdk-</code> から始まるレポジトリを開きます。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\475416c154c988ab.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/475416c154c988ab.png"></p>
 <p>レポジトリ内に保存されているイメージにすべてチェックを入れて削除します。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\eeeb614fdf56e34f.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/eeeb614fdf56e34f.png"></p>
 <p>以上でECRのアセットの削除は完了です。</p>
 <h3 is-upgraded>S3の中身を削除</h3>
 <p>続いてS3のアセットを削除します。</p>
 <p>AWSのコンソールから <code>cdk-</code> から始まるバケットを選択して【空にする】を選択します。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\bc3c61f5064f563c.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/bc3c61f5064f563c.png"></p>
 <p>これでS3のアセットの削除は完了です。</p>
 <h3 is-upgraded>CloudFormationでスタックを削除</h3>
 <p>最後にCloudFormationでCDKに使われていたスタックを削除していきます。AWSのコンソール画面からCloudFormationを開き、 <code>CDKToolkit</code> を選択して【削除】をクリックします。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\611acca3a6f21d39.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/611acca3a6f21d39.png"></p>
 <p>リロードボタンを押して、CDKToolkitの表示が消えたらスタックの削除は完了です。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\4e4c53d4400fe81c.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/4e4c53d4400fe81c.png"></p>
 <h2 is-upgraded>Gitpodのインスタンスの削除</h2>
 <p>Gitpodはフリープランであればインスタンスが止まるだけで請求は来ないのでハンズオンの復習をするために残してもいいですし、削除したい場合は <a href="https://gitpod.io/workspaces" target="_blank">https://gitpod.io/workspaces</a> から削除することができます。</p>
-<p class="image-container"><img style="width: 601.70px" src="img\\e5584624f3714d6.png"> </p>
+<p class="image-container"><img style="width: 601.70px" src="img/e5584624f3714d6.png"> </p>
 <h2 is-upgraded>まとめ</h2>
 <p>今回はCDKを使用してAWS上で動作するアプリケーションを構築していく流れを体験していただきました。CDKを使うことでAWSのコンソールを開かなくてもアプリケーションの構築が簡単にできることがお分かりいただけたと思います。</p>
 <p>CDKはコードでAWSのリソースを定義するだけではなく、アプリケーションのデプロイをサポートする機能も充実しているので使いこなすことでかなり開発効率が上がります。</p>
@@ -642,12 +643,12 @@ CdkHandsonDatabaseStack: destroying... [3/3]
 <p>今回のハンズオンのソースコードは以下のGithubレポジトリで公開しているのでハンズオンの復習に是非ご活用ください。また、ローカルの環境構築を簡単にできるDevcontainerの設定ファイルも用意しています。</p>
 <p><a href="https://github.com/Miura55/jawsug-nagoya-cdk-handson" target="_blank">https://github.com/Miura55/jawsug-nagoya-cdk-handson</a></p>
 <h3 is-upgraded>APIのコードについて軽く解説</h3>
-<p class="image-container"><img style="width: 601.70px" src="img\\a1beb692b5b79c5b.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/a1beb692b5b79c5b.png"></p>
 <p>今回のハンズオンではFastAPIというPythonのWebフレームワークを使ってAPIを作成しています。FastAPIはPythonのWebフレームワークの中では比較的新しいフレームワークで、非同期処理に対応しています。Flaskに近い記法なのでFlask触ったことある方なら同じ感覚でAPIを実装できます。</p>
 <p>ハンズオンではAPIの動作確認にAPIドキュメントを使用していますが、これはFastAPIのデフォルトの機能として提供されており、リクエストとレスポンスのスキーマをAPIごとに定義するだけで効率よくAPIドキュメントを作ることができます。</p>
 <p>今回は取り上げませんでしたが、APIにデプロイするコンテナをローカルで確認できるように <code>api</code> ディレクトリ内にdocker-compose.yamlがあるので動作確認が手軽にできるようになります。</p>
 <h3 is-upgraded>フロントエンドのコードについて軽く解説</h3>
-<p class="image-container"><img style="width: 601.70px" src="img\\f60645b59446e824.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/f60645b59446e824.png"></p>
 <p>フロントエンドにはフレームワークにReact、ビルドにViteを使用しています。ViteはWebpackに変わる比較的新しめのビルドツールでフランス語で「素早い」という意味があるようにビルドを高速化させることができます。</p>
 <p>ローカルでの動作確認するときと本番用にビルドするときで環境変数を使い分けることができるので、APIのURLなどを環境変数として定義すれば開発効率が上がります。今回のコードでは <code>todo-app/.env</code> で設定しているURLがローカル用、 <code>todo-app/.env.production.local</code> で設定しているURLがAWSのAPI Gateway用に設定するようにしています。ローカルのAPIについてはFastAPIのときに紹介したdocker-compose.yamlやDevcontainerで動かしてください。</p>
 <p>日本語のドキュメントがかなり充実しているので興味のある方は <a href="https://ja.vitejs.dev/guide/" target="_blank">https://ja.vitejs.dev/guide/</a> をチェックしてみてください。</p>
