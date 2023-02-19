@@ -6,4 +6,4 @@ services:
     ports:
       - 80:80
     volumes:
-      - ./docs:/usr/share/nginx/html
+      - ./jawsug-nagoya-cdk-handson:/usr/share/nginx/html
