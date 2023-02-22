@@ -628,7 +628,10 @@ CdkHandsonDatabaseStack: destroying... [3/3]
 <p class="image-container"><img style="width: 601.70px" src="img/4e4c53d4400fe81c.png"></p>
 <h2 is-upgraded>Gitpodのインスタンスの削除</h2>
 <p>Gitpodはフリープランであればインスタンスが止まるだけで請求は来ないのでハンズオンの復習をするために残してもいいですし、削除したい場合は <a href="https://gitpod.io/workspaces" target="_blank">https://gitpod.io/workspaces</a> から削除することができます。</p>
+<p>タイムアウトをするとワークスペース内のコードは残りますが、AWSのクレデンシャルは削除されるのでタイムアウトから再度立ち上げたら <code>aws configure</code> を実行する必要があります。</p>
 <p class="image-container"><img style="width: 601.70px" src="img/e5584624f3714d6.png"> </p>
+<h2 is-upgraded>IAMアクセスキーの削除</h2>
+<p>今回使用したIAMのアクセスキーには AdministratorAccessのポリシーがアタッチされているのでハンズオン終了後は削除しておくと安全です。</p>
 <h2 is-upgraded>まとめ</h2>
 <p>今回はCDKを使用してAWS上で動作するアプリケーションを構築していく流れを体験していただきました。CDKを使うことでAWSのコンソールを開かなくてもアプリケーションの構築が簡単にできることがお分かりいただけたと思います。</p>
 <p>CDKはコードでAWSのリソースを定義するだけではなく、アプリケーションのデプロイをサポートする機能も充実しているので使いこなすことでかなり開発効率が上がります。</p>
