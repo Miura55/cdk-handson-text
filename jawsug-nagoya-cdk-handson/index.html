@@ -38,20 +38,19 @@
 <p>コードでインフラのシステム構成を定義することで必要なソフトウェアが自動的にセットアップされます。</p>
 <p>これにより環境構築が自動化されるので、ヒューマンエラーを減らすだけではなく管理コストも大きく下げることができます。</p>
 <h2 is-upgraded>AWS CDKとは</h2>
-<p>AWS CDKはAWSのサービス構成をコードで定義するためのIaCツールです。</p>
-<p>クラウドのアプリケーション構成をモダンなプログラミング言語で定義することができて、最終的にはCloudFormationのテンプレートに変換されてデプロイをされます。</p>
+<p>AWS CDKはAWSのサービス構成をコードで定義するためのIaCツールです。クラウドのアプリケーション構成をモダンなプログラミング言語で定義することができて、最終的にはCloudFormationのテンプレートに変換されてデプロイをされます。</p>
 <p>CDKを使って開発することで以下のようなメリットがあります。</p>
 <ul>
 <li>AWSのサービス構成をアプリケーションのコードと一緒にGitレポジトリと一緒に管理することができる→チームメンバーがインフラベースからアプリケーション構成を理解しやすくなる</li>
-<li>構成変更が出てきたときにあとから変更することが簡単にできる</li>
-<li>別のAWS環境でも全く同じ構成でデプロイできるので再現性が高い</li>
+<li>共通で構築するリソース定義をモジュール化し、他のプロジェクトで使いまわしがしやすい</li>
+<li>認証するAWSアカウントを変更することで、複数の環境で同じインフラ構成をデプロイできるため、再現性が高い</li>
 </ul>
 <h2 is-upgraded>このハンズオンで作るもの</h2>
 <p>このハンズオンではシンプルなTodoアプリケーションの構築を通じてCDKの使い方、IaCの魅力を体験して頂きます。</p>
-<p>Step1ではFargate + API Gatewayを使ったAPIを構築します。</p>
+<p>Step1ではECS Fargate + API Gatewayを使ったAPIを構築します。</p>
 <p>Step2ではDynamoDBのテーブルを用意して、Step1で構築したAPIに接続できるようにします。</p>
 <p>Step3ではS3 + CloudFrontを使ってフロントエンドをホスティングしてStep1で構築したAPIで通信できるようにします。</p>
-<p class="image-container"><img style="width: 396.00px" src="img/f56a944c40cfbef3.png"></p>
+<p class="image-container"><img style="width: 396.00px" src="img/21c04ba073669aa2.png"></p>
 <p>今回構築するアプリケーションの構造がわかったところで、次のページから環境構築していきます。</p>
 
 
@@ -62,78 +61,80 @@
 <p>なお、リージョン違いでのトラブルを防ぐためAWSの作業はすべて<strong>ap-northeast-1(東京リージョン)</strong>で行います</p>
 <h2 is-upgraded>事前準備</h2>
 <ul>
-<li>AWSアカウント(IAMユーザーでログインしている場合は、AdministratorAccessポリシーが必要です。まだ作成されてない方は<a href="https://aws.amazon.com/jp/register-flow/" target="_blank">https://aws.amazon.com/jp/register-flow/</a> を参考に登録してください)</li>
-<li>Gitpodのアカウント(<a href="https://www.gitpod.io" target="_blank">https://www.gitpod.io</a> から登録してください。Github、Gitlab、BItbucketのアカウントが必要です)</li>
+<li>AWSアカウント(IAMユーザーでログインしている場合は、AdministratorAccessポリシーが必要です。AWSアカウントをお持ちで無い方は<a href="https://aws.amazon.com/jp/register-flow/" target="_blank">https://aws.amazon.com/jp/register-flow/</a> を参考に登録してください)</li>
 </ul>
-<h2 is-upgraded>Gitpodを起動</h2>
-<p>まずは開発環境を用意します。通常、AWSのハンズオンであればCloud9を使うことが多いですが、今回はアプリケーションでVPCを使用するため、開発環境にGitpodというサービスを使用します。</p>
-<p>以下のレポジトリにアクセスします。</p>
-<p><a href="https://github.com/pahud/gitpod-workspace" target="_blank">https://github.com/pahud/gitpod-workspace</a></p>
-<p>READMEにある「ready-to-code」をクリックしてGitpodのワークスペースを起動します。</p>
-<p class="image-container"><img style="width: 601.70px" src="img/9747b587fd715eb.png"></p>
-<p>以下のようにVSCodeが起動できたら実行環境の用意は完了です。</p>
-<p class="image-container"><img style="width: 601.70px" src="img/c0cbeb33d0eaef9d.png"></p>
-<h2 is-upgraded>アクセスキーを入手</h2>
-<p>GitpodからAWSへの接続に必要なアクセスキーを入手するためにIAMユーザーを作成します（AdministratorAccessポリシーのIAMユーザーでログインしている場合はそのユーザーでアクセスキーを作成しても構いません）</p>
-<p class="image-container"><img style="width: 601.70px" src="img/a6a613c6ad4426a3.png"></p>
-<p>ポリシーは<strong>AdministratorAccess</strong>を選択します</p>
-<p class="image-container"><img style="width: 601.70px" src="img/6e8299c970d28b35.png"></p>
-<p>作成したIAMユーザーをクリックして「セキュリティ認証情報」タブをクリックしてアクセスキーを作成します</p>
-<p class="image-container"><img style="width: 601.70px" src="img/c4c53e12ebf0cc08.png"></p>
-<p class="image-container"><img style="width: 601.70px" src="img/85b170e1af3a9fb4.png"></p>
-<p>使用目的はCLIを選択して、その後下に表示されるチェックボックスにチェックをいれて次へ進みます。</p>
-<p class="image-container"><img style="width: 601.70px" src="img/8bd2081aa79671cf.png"></p>
-<p class="image-container"><img style="width: 601.70px" src="img/6358eb6f48c75fdb.png"></p>
-<p>あとはデフォルトのままアクセスキーが取得できる画面まで進みます。アクセスキーの画面を閉じるとシークレットアクセスキーは2度と確認することができないので、忘れずにメモしておきます。<img style="width: 601.70px" src="img/f09c5c517a0d1801.png"></p>
-<h2 is-upgraded>AWS CLIの設定をする</h2>
-<p>Gitpodに戻りターミナルで <code>aws configure</code> を実行し、AWSの認証情報を登録します。</p>
-<p>AWS Access Key IDには先程取得したアクセスキーを入力します。</p>
-<pre><code>AWS Access Key ID [None]:【アクセスキー】
-AWS Secret Access Key [None]:【シークレットアクセスキー】
-Default region name [None]: ap-northeast-1
-Default output format [None]: json</code></pre>
-<p>設定ができたら <code>aws iam list-users</code>でAWSのルートアカウント上にあるIAMユーザーの情報が一覧で表示されたらCLIの設定は正常に完了しています。もし、エラーが出る場合は認証情報に誤りが無いか確認してください。</p>
-<pre><code>{
-    &#34;Users&#34;: [
-        {
-            &#34;Path&#34;: &#34;/&#34;,
-            &#34;UserName&#34;: &#34;develop&#34;,
-            &#34;UserId&#34;: &#34;AIDA4IPKU4JDEXAMPLEID&#34;,
-            &#34;Arn&#34;: &#34;arn:aws:iam::123456789000:user/develop&#34;,
-            &#34;CreateDate&#34;: &#34;2022-12-29T06:54:08+00:00&#34;,
-            &#34;PasswordLastUsed&#34;: &#34;2023-02-13T11:40:14+00:00&#34;
-        },
-        {
-            &#34;Path&#34;: &#34;/&#34;,
-            &#34;UserName&#34;: &#34;Gitpod&#34;,
-            &#34;UserId&#34;: &#34;AIDA4IPKU4JEXAMPLEID&#34;,
-            &#34;Arn&#34;: &#34;arn:aws:iam::123456789000:user/Gitpod&#34;,
-            &#34;CreateDate&#34;: &#34;2023-02-13T12:53:01+00:00&#34;
-        }
-    ]
-}
+<h2 is-upgraded>EC2上にcode-serverを構築</h2>
+<p>まずは開発環境を用意します。今回は環境の差異をなくすため、CDKの実行環境を構築したEC2インスタンス上で動作する<a href="https://github.com/coder/code-server" target="_blank">code-server</a> を用意します。code-serverはオンラインでVS Codeを動かすためのオープンソースのツールです。</p>
+<p>手順を簡略化させるため、今回はこのcode-serverを動作させるための最小構成のセットアップをするCloudFormationテンプレートを使ったスクリプトを用意したので、それを使ってCDKの開発環境を構築していきます。</p>
+<aside class="special"><p>お手元のローカル環境上でワークショップを進めても問題ありません。</p>
+<p>その場合は、以下の動作環境を用意する必要があります。</p>
+<ul>
+<li>Node.js v20.10.0以上</li>
+<li>AWS CDK v2.1029.0以上</li>
+</ul>
+</aside>
+<p>AWSのマネジメントコンソールを開きCloudShellを開きます。</p>
+<p>CloudShellは右上のターミナルアイコンから開くことができます。このとき、リージョンは<strong>アジアンパシフィック(東京)</strong>になっていることを確認してください。</p>
+<p class="image-container"><img style="width: 355.00px" src="img/ff463146831f0c80.png"></p>
+<p>CloudShellを開いたら、以下のコマンドでスクリプトが入ってるレポジトリをクローンしてきます。</p>
+<pre><code>git clone https://github.com/Miura55/ec2-code-server.git</code></pre>
+<p>クローンしたら以下のコマンドでスクリプトを起動します。</p>
+<pre><code>cd ec2-code-server
+./deploy.sh</code></pre>
+<p>ここから対話形式でセットアップをします。まずは、SSH接続で必要なキーペアを設定する項目ですが、今回は特にSSH接続を行う必要はないので、何も入力せずEnterキーを入力します。</p>
+<pre><code>Enter key pair name (optional, press Enter to skip): </code></pre>
+<p>インスタンスタイプを設定します。特にこだわりが無ければデフォルトの <code>t3.medium</code> を設定し、Enterキーを入力します。</p>
+<pre><code>Instance type (t3.medium): </code></pre>
+<p><br>AMIはAmazon Linux 2023のAMI IDがデフォルトで設定されています。このままで問題なければEnterキーを入力します。</p>
+<pre><code>AMI ID (ami-07faa35bbd2230d90):</code></pre>
+<p>続いてパスワードの設定です。パスワードは自分が覚えやすいものを設定し、Enterキーを入力します。</p>
+<p>※入力内容が非表示になる設定を入れています。</p>
+<pre><code>VSCode Server password (vscode-password):</code></pre>
+<p>CIDRは <code>0.0.0.0/0</code> を設定し、Enterキーを入力します。</p>
+<pre><code>Allowed CIDR (0.0.0.0/0):</code></pre>
+<p>以上の設定を行うと、CloudFormation上に <code>vscode-cdk-dev</code> という名前のスタックが作成されます。</p>
+<p>リソースの作成状況はマネコンのCloudFormationの画面で確認できます。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/702227aef004424f.png"></p>
+<p>作成が完了するとCloudShellから以下の出力がされたら、スタックの作成は正常に完了しています。</p>
+<pre><code>--------------------------------------------------------------------------------------------------------------------------
+|                                                     DescribeStacks                                                     |
++-----------------------------------------+-----------------------+------------------------------------------------------+
+|               Description               |       OutputKey       |                     OutputValue                      |
++-----------------------------------------+-----------------------+------------------------------------------------------+
+|  EC2 Instance ID                        |  InstanceId           |  i-03abcdef10caf14e2                                 |
+|  Public IP address of the instance      |  PublicIP             |  11.111.111.11                                       |
+|  Password for VSCode Server             |  VSCodeServerPassword |  vscode-serer                                        |
+|  URL to access VSCode Server            |  VSCodeServerURL      |  http://11.111.111.11:8080                           |
++-----------------------------------------+-----------------------+------------------------------------------------------+
 </code></pre>
-<p>ターミナルに貼り付けるときに以下のダイアログが表示されたらコピペを許可してもらっていいです。</p>
-<p class="image-container"><img style="width: 324.00px" src="img/e7b575ff2486538e.png"></p>
-<h2 is-upgraded>CDKアプリを作成する</h2>
-<p>今回使用するGitpodの環境にはCDKのCLIがセットアップ済みなので、早速CDKアプリを用意します。CDKアプリを作るためには空のディレクトリを用意する必要があるので以下のコマンドでCDKアプリ用のディレクトリを用意します。</p>
-<p>なお、ここで作成したディレクトリ名でCDKアプリの構成ファイルが作成されるため、ディレクトリ名を間違えるとこの先の工程が実行できないので、打ち間違いにご注意ください。</p>
+<p>この出力の中にある <code>VSCodeServerURL</code> の値をコピーし、ブラウザで開くと以下の画面が表示されます。ここで、<code>VSCodeServerPassword</code>  で設定したパスワードを入力します。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/76888277ab01fdd6.png"></p>
+<p>以下の通りVS Codeの画面が表示されていればオンラインの開発環境は構築されています。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/537868ca8bb5cee9.png"></p>
+<h2 is-upgraded>CDKのプロジェクトを作成する</h2>
+<p>実行環境を用意できたところで、今回使用するCDKのプロジェクトの雛形を用意します。CDKのプロジェクトを作るためには空のディレクトリを用意する必要があるので以下のコマンドでディレクトリを用意します。</p>
 <pre><code>mkdir cdk-handson
 cd cdk-handson</code></pre>
 <p><code>pwd</code> と入力したときに以下のパスが表示されたら問題ありません。</p>
-<pre><code>/workspace/gitpod-workspace/cdk-handson</code></pre>
+<pre><code>/home/ec2-user/cdk-handson</code></pre>
 <p>空のディレクトリが用意できたところで以下のコマンドを実行しCDKアプリを用意します。</p>
-<pre><code>npx cdk init app --language typescript</code></pre>
-<p>実行後、 <code>cdk-handson</code> ディレクトリ配下に以下のファイル、フォルダが作成されたらCDKアプリの用意は完了です。もし結果が違う場合は作業ディレクトリに誤りが無いか確認してください。</p>
-<p class="image-container"><img style="width: 277.00px" src="img/99c1130c6241bfcf.png"></p>
+<pre><code>cdk init app --language typescript</code></pre>
+<p>CDKプロジェクトが用意できたので、作業を円滑に行うためにエディタでCDKのプロジェクトがあるディレクトリを開きます。左のメニューバーにあるファイルアイコンをクリックし、「Open Folder」をクリックします。</p>
+<p class="image-container"><img style="width: 342.00px" src="img/fd8fe2fac3d468dc.png"></p>
+<p>開くフォルダを聞かれるので、 <code>/home/ec2-user/cdk-handson</code> を入力し、OKボタンを押します。</p>
+<p class="image-container"><img style="width: 596.00px" src="img/5dc3a70075c6f7ca.png"></p>
+<p>以下の構成のファイルが表示されたら、開発環境の準備は完了です。</p>
+<p class="image-container"><img style="width: 299.00px" src="img/6bf6a6b816db316.png"></p>
 <h2 is-upgraded>Bootstrap</h2>
 <p>CDKでデプロイする前にAWS側でデプロイ時のデータを保持するためのリソースを用意する必要があります。これを <strong>Bootstrap</strong> といいます。</p>
-<p>環境構築の最後の作業として以下のコマンドでBootstrapを実行します。BootstrapはAWSのルートアカウント、リージョンにつき1回実行すればいいので、以前にCDKを使ったことあってリソースを削除していない場合はスキップしても問題ないです。</p>
-<pre><code>npx cdk bootstrap</code></pre>
+<p>環境構築の最後の作業として以下のコマンドでBootstrapを実行します</p>
+<aside class="special"><p>すでにデプロイ先のAWSアカウントでCDKを使用したことがある場合は、この手順はスキップしてOKです。</p>
+</aside>
+<pre><code>cdk bootstrap</code></pre>
 <p>実行後各種リソースが作成されて以下のようなメッセージが表示されたらBootstrapは正常に完了しています。</p>
 <pre><code>CDKToolkit: creating CloudFormation changeset...
  ✅  Environment aws://123456789000/ap-northeast-1 bootstrapped.</code></pre>
-<p>ちなみにAWSのコンソールでCloudFormationを確認すると、以下のように「CDKToolkit」という名前のスタックが作られていますが、これがCDKでデプロイするときのデータを保持しておくリソースが作成されています。余裕がある方はどんなリソースが作成されいているか見てみるといいです。</p>
+<p>ちなみにAWSのコンソールでCloudFormationを確認すると、以下のように「CDKToolkit」という名前のスタックが作られていますが、これがCDKでデプロイするときのデータを保持しておくリソースが作成されています。余裕がある方はスタックを開いていただき、どんなリソースが作成されているか見てみるといいです。</p>
 <p class="image-container"><img style="width: 601.70px" src="img/be01fd003e8cd03e.png"></p>
 <p>以上で環境構築は完了です。次のページからCDKを使ってAWSのアプリケーションを構築していきます。</p>
 
@@ -147,50 +148,84 @@ cd cdk-handson</code></pre>
 <pre><code>wget -O api.zip https://github.com/Miura55/jawsug-nagoya-cdk-handson/releases/download/v1.0.0/api-asset-v1.0.0.zip
 unzip api.zip</code></pre>
 <p>展開して以下のように <code>cdk-handson</code> 配下に <code>api</code> ディレクトリが作成されたら問題ありません。</p>
-<p class="image-container"><img style="width: 280.00px" src="img/30819a7b7380f293.png"></p>
-<h2 is-upgraded>APIを構築するスタックのコード</h2>
-<p>APIのコードを用意できたら、 <code>cdk-handson/lib</code> 内に apiを構築するスタックのコードを作成します。ファイル名は <code>handson-api-stack.ts</code> です。もとから存在している <code>cdk-handson-stack.ts</code> は不要なのでファイル名を変更してもいいですし、削除して新規作成してもいいです。</p>
-<p><code>handson-api-stack.ts</code> に以下のコードをコピぺします。</p>
-<pre><code>import * as cdk from &#39;aws-cdk-lib&#39;;
-import * as path from &#39;path&#39;;
-import { Construct } from &#39;constructs&#39;;
+<p class="image-container"><img style="width: 299.00px" src="img/f1157e1326407a5b.png"></p>
+<h2 is-upgraded>APIを構築するコンストラクトのコード</h2>
+<p>APIのコードを用意できたら、ターミナルを開きます。</p>
+<p>以下のコマンドで今回作成するアプリケーションの各ステップで作成するリソースを定義したモジュール(以下、コンストラクト)を保存するディレクトリを作成します。</p>
+<pre><code>mkdir -p lib/constructs/</code></pre>
+<p>続いてAPIのコンストラクトのファイルを以下のコマンドで新規作成します。</p>
+<pre><code>touch lib/constructs/api-construct.ts</code></pre>
+<p><code>lib/constructs/api-construct.ts</code> に以下のコードを書き込みます。</p>
+<pre><code>import { Construct } from &#39;constructs&#39;;
+import { HttpApi, CorsHttpMethod, HttpMethod, VpcLink } from &#39;aws-cdk-lib/aws-apigatewayv2&#39;;
+import { HttpAlbIntegration } from &#39;aws-cdk-lib/aws-apigatewayv2-integrations&#39;;
+import * as cdk from &#39;aws-cdk-lib&#39;;
+import { SecurityGroup, Vpc, Port, Peer } from &#39;aws-cdk-lib/aws-ec2&#39;;
 import { Cluster, ContainerImage, LogDriver } from &#39;aws-cdk-lib/aws-ecs&#39;;
-import { Vpc } from &#39;aws-cdk-lib/aws-ec2&#39;;
 import { DockerImageAsset } from &#39;aws-cdk-lib/aws-ecr-assets&#39;;
 import { ApplicationLoadBalancedFargateService } from &#39;aws-cdk-lib/aws-ecs-patterns&#39;;
 import { RetentionDays } from &#39;aws-cdk-lib/aws-logs&#39;;
-import { CfnVpcLink, CfnIntegration, CfnRoute } from &#39;aws-cdk-lib/aws-apigatewayv2&#39;;
-import { HttpApi, CorsHttpMethod } from &#39;@aws-cdk/aws-apigatewayv2-alpha&#39;;
 import { IRole } from &#39;aws-cdk-lib/aws-iam&#39;;
 
-
-interface ApiStackProps extends cdk.StackProps {
+interface ApiProps {
   tableName: string;
 }
 
-export class ApiStack extends cdk.Stack {
+export class ApiConstruct extends Construct {
+  public readonly apiEndpoint: string;
   public readonly fargateTaskRole: IRole;
 
-  constructor(scope: Construct, id: string, props: ApiStackProps) {
-    super(scope, id, props);
+  constructor(scope: Construct, id: string, props: ApiProps) {
+    super(scope, id);
 
     // VPC
     const vpc = new Vpc(this, &#39;Vpc&#39;, {
       maxAzs: 2,
     });
 
-    // ECSクラスターを作成する
+    // ECS Cluster
     const cluster = new Cluster(this, &#39;Cluster&#39;, {
       clusterName: &#39;handson-api-cluster&#39;,
       vpc: vpc,
     });
 
-    // DockerImageAssetを使って、DockerイメージをビルドしてECRにプッシュする
-    const imageAsset = new DockerImageAsset(this, &#39;ImageAsset&#39;, {
-      directory: path.join(__dirname, &#39;../api&#39;)
+
+    // VPC Link用のセキュリティグループを作成
+    const vpcLinkSecurityGroup = new SecurityGroup(this, &#39;VpcLinkSecurityGroup&#39;, {
+      vpc: cluster.vpc,
+      description: &#39;Security group for VPC Link&#39;,
+      allowAllOutbound: true, // ALBへのアウトバウンド通信を許可
     });
 
-    // Fargateサービスを作成する(ロードバランサー付き)
+    // ALBへのアクセスを許可（ALBがポート80でリッスンしている場合）
+    vpcLinkSecurityGroup.addEgressRule(
+      Peer.anyIpv4(),
+      Port.tcp(80),
+      &#39;Allow outbound HTTP to ALB&#39;
+    );
+
+    // または、ALBがポート8000でリッスンしている場合
+    vpcLinkSecurityGroup.addEgressRule(
+      Peer.anyIpv4(),
+      Port.tcp(8000),
+      &#39;Allow outbound to ALB on port 8000&#39;
+    );
+
+    // VPC Linkを明示的に作成（セキュリティグループを指定）
+    const vpcLink = new VpcLink(this, &#39;ApiVpcLink&#39;, {
+      vpc: cluster.vpc,
+      subnets: {
+        subnets: cluster.vpc.privateSubnets,
+      },
+      securityGroups: [vpcLinkSecurityGroup], // 作成したセキュリティグループを指定
+    });
+
+    // Docker Image Asset
+    const imageAsset = new DockerImageAsset(this, &#39;ImageAsset&#39;, {
+      directory: &#39;./api&#39;,
+    });
+
+    // ALB付きFargateサービス
     const fargateService = new ApplicationLoadBalancedFargateService(this, &#39;FargateService&#39;, {
       cluster,
       memoryLimitMiB: 512,
@@ -204,25 +239,28 @@ export class ApiStack extends cdk.Stack {
           logRetention: RetentionDays.ONE_DAY,
         }),
         environment: {
-          &#39;AWS_REGION&#39;: this.region,
+          &#39;AWS_REGION&#39;: cdk.Stack.of(this).region,
           &#39;DYNAMO_TABLE&#39;: props.tableName,
-        }
+        },
       },
       taskSubnets: {
         subnets: cluster.vpc.privateSubnets,
       },
-      publicLoadBalancer: true,
+      listenerPort: 8000, // ALBリスナーを8000ポートに設定
     });
-    this.fargateTaskRole = fargateService.taskDefinition.taskRole;
 
-    // VPC Link
-    const httpVpcLink = new CfnVpcLink(this, &#39;HttpVpcLink&#39;, {
-      name: &#39;handson-api-vpc-link&#39;,
-      subnetIds: cluster.vpc.privateSubnets.map(subnet =&gt; subnet.subnetId),
+    // ヘルスチェックパスを設定
+    fargateService.targetGroup.configureHealthCheck({
+      path: &#39;/&#39;,
+    });
+
+    // ALB Integration
+    const albIntegration = new HttpAlbIntegration(&#39;HttpApiIntegration&#39;, fargateService.listener, {
+      vpcLink: vpcLink
     });
 
     // HTTP API
-    const api = new HttpApi(this, &#39;HttpApi&#39;, {
+    const httpApi = new HttpApi(this, &#39;HttpApi&#39;, {
       apiName: &#39;handson-api&#39;,
       corsPreflight: {
         allowOrigins: [&#39;*&#39;],
@@ -231,61 +269,57 @@ export class ApiStack extends cdk.Stack {
       },
     });
 
-    const integration = new CfnIntegration(this, &#39;HttpApiIntegration&#39;, {
-      apiId: api.apiId,
-      description: &#39;handson-api&#39;,
-      connectionId: httpVpcLink.ref,
-      connectionType: &#39;VPC_LINK&#39;,
-      integrationType: &#39;HTTP_PROXY&#39;,
-      integrationMethod: &#39;ANY&#39;,
-      integrationUri: fargateService.listener.listenerArn,
-      payloadFormatVersion: &#39;1.0&#39;,
+    // Routes
+    httpApi.addRoutes({
+      path: &#39;/{proxy+}&#39;,
+      methods: [HttpMethod.ANY],
+      integration: albIntegration,
     });
 
-    // HTTP APIのルートを作成する
-    new CfnRoute(this, &#39;HttpApiRoute&#39;, {
-      apiId: api.apiId,
-      routeKey: &#39;ANY /{proxy+}&#39;,
-      target: `integrations/${integration.ref}`,
-    });
-
-    // APIのエンドポイントを出力する
+    // Output
     new cdk.CfnOutput(this, &#39;ApiEndpoint&#39;, {
-      value: api.apiEndpoint,
+      value: httpApi.apiEndpoint,
     });
+
+    // スタックの外から参照できるようにする
+    this.apiEndpoint = httpApi.apiEndpoint;
+    this.fargateTaskRole = fargateService.taskDefinition.taskRole;
   }
 }
 </code></pre>
-<p>保存したらモジュールの参照エラーが起きているので、 <code>cdk-handson</code> ディレクトリ直下で追加のパッケージをインストールします。</p>
-<pre><code>npm install @aws-cdk/aws-apigatewayv2-alpha</code></pre>
-<p>用意したスタックをCDKで呼び出すために、 <code>cdk-handson/bin</code> ディレクトリ直下の <code>cdk-handson.ts</code> を以下のコードに書き換えます。</p>
-<pre><code>#!/usr/bin/env node
-import &#39;source-map-support/register&#39;;
-import * as cdk from &#39;aws-cdk-lib&#39;;
-import { ApiStack } from &#39;../lib/handson-api-stack&#39;;
+<p>用意したコンストラクトをスタックに反映するために、 <code>lib/cdk-handson-stack.ts</code> を以下のコードに書き換えます。</p>
+<pre><code>import * as cdk from &#39;aws-cdk-lib&#39;;
+import { Construct } from &#39;constructs&#39;;
+import { ApiConstruct } from &#39;./constructs/api-construct&#39;;
 
-const app = new cdk.App();
-const tableName = &#39;handson-todo-table&#39;;
+export class CdkHandsonStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
 
-const apiStack = new ApiStack(app, &#39;CdkHandsonApiStack&#39;, {
-  env: { region: &#39;ap-northeast-1&#39; },
-  tableName: tableName,
-});
+    const tableName = &#39;cdk-handson-todo&#39;;
+
+    // API Construct
+    const api = new ApiConstruct(this, &#39;Api&#39;, {
+      tableName: tableName
+    })
+  }
+}
 </code></pre>
-<p>ここで <code>const apiStack</code> と変数を定義していますが、これは後で作成するスタックで必要になるのでそのままにしておいてください。</p>
+<p>ここで変数 <code>api</code> を定義していますが、これは後で作成するスタックで必要になるのでそのままにしておいてください。</p>
 <h2 is-upgraded>テンプレートの作成</h2>
 <p>CDKはコードで書いたスタックをCloudFormationのテンプレートに変換してAWSにデプロイします。そこで実際にこのステップで用意したスタックでどんなテンプレートが作成されるかを見てみます。</p>
 <p><code>cdk-handson</code> ディレクトリ上で以下のコマンドを実行するとCloudFormationのテンプレートが実行結果に出力されます。</p>
-<pre><code>npx cdk synth</code></pre>
-<p>実行結果ではYaml形式でテンプレートが出力されます。実際に書いたコードよりも膨大な量のテンプレートが作成されることがおわかりいただけると思います。CDKでデプロイをするのであれば <code>cdk deploy</code> 時にCloudFormationのテンプレートは作成されるので、このコマンド実行する必要はありません。</p>
+<pre><code>cdk synth</code></pre>
+<p>実行結果ではYaml形式でテンプレートが出力されます。実際に書いたコードよりも膨大な量のテンプレートが作成されることがおわかりいただけると思います。CDKでデプロイをするのであれば <code>cdk deploy</code> 時にCloudFormationのテンプレートは作成されるので、このコマンドを実行する必要はありません。</p>
 <h2 is-upgraded>デプロイ</h2>
 <p>それではAWSにデプロイしてみましょう。デプロイは以下のコマンドを実行します</p>
-<pre><code> npx cdk deploy CdkHandsonApiStack</code></pre>
+<pre><code> cdk deploy</code></pre>
 <p>実行するとAPIのコンテナイメージのビルドが実行されて先程Bootstrapで作成されたECRレポジトリにPushします。その後作成されるAWSのリソースが一覧で表示され、以下の質問が表示されるので、 <code>y</code> と入力してエンターキーを押すと次に進みます。</p>
 <pre><code>Do you wish to deploy these changes (y/n)? </code></pre>
-<p>以下のようにAWSのリソースが自動で構築されていきます。デプロイに時間がかかります。</p>
+<p>以下のようにAWSのリソースが自動で構築されていきます。初回はデプロイに時間がかかります。</p>
 <p class="image-container"><img style="width: 601.70px" src="img/c769fd1d896111e0.png"></p>
 <p>デプロイが完了し、以下のように出力が表示されたらデプロイは正常に完了しています。</p>
+<p><code>ApiEndpoint</code> は今後の手順で必要になるのでどこかにメモしておきます。</p>
 <pre><code>Outputs:
 CdkHandsonApiStack.ApiEndpoint = https://odbhg8has3.execute-api.ap-northeast-1.amazonaws.com
 CdkHandsonApiStack.FargateServiceLoadBalancerDNS8987E = CdkHa-Farga-D6UWOZCNQBIG-184184.ap-northeast-1.elb.amazonaws.com
@@ -313,22 +347,24 @@ CdkHandsonApiStack.FargateServiceServiceURL454545 = http://CdkHa-Farga-A3HZCNQBI
     
       <google-codelab-step label="Step2. DynamoDBをAPIに接続する" duration="0">
         <p>Step1でAPIを作成しましたが、DynamoDBのテーブルが作成されていないことでエラーになっていました。そこでこのステップでは今回のアプリケーションに使用するDynamoDBのテーブルの作成とそれをAPIに接続するためのスタックを用意します。</p>
-<h2 is-upgraded>データベースを構築するスタックのコード</h2>
-<p>APIのスタックと同様に <code>cdk-handson/lib</code> ディレクトリ内にデータベースを構築するためのスタックを作成します。ファイル名は <code>handson-database-stack.ts</code> で以下のソースコードを書いて保存します。</p>
+<h2 is-upgraded>データベースを構築するコンストラクトのコード</h2>
+<p>APIのスタックと同様に <code>cdk-handson/lib</code> ディレクトリ内にデータベースを構築するためのコンストラクトを用意します。</p>
+<p>以下のコマンドでコンストラクトのコードを新規作成します。</p>
+<pre><code>touch lib/constructs/database-construct.ts</code></pre>
+<p><code>lib/constructs/database-construct.ts</code> に以下のコードを書いて保存します。</p>
 <pre><code>import * as cdk from &#34;aws-cdk-lib&#34;;
 import { Construct } from &#34;constructs&#34;;
 import { Table, AttributeType, BillingMode } from &#34;aws-cdk-lib/aws-dynamodb&#34;;
 import { IRole } from &#34;aws-cdk-lib/aws-iam&#34;;
 
-
-interface DatabaseStackProps extends cdk.StackProps {
+interface DatabaseConstructProps extends cdk.StackProps {
   tableName: string;
   fargateTaskRole: IRole;
 }
 
-export class DatabaseStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props: DatabaseStackProps) {
-    super(scope, id, props);
+export class DatabaseConstruct extends Construct {
+  constructor(scope: Construct, id: string, props: DatabaseConstructProps) {
+    super(scope, id);
 
     const table = new Table(this, &#34;TodoTable&#34;, {
       partitionKey: {
@@ -343,62 +379,93 @@ export class DatabaseStack extends cdk.Stack {
     // FargateタスクにDynamoDBへのアクセス権限を付与する
     table.grantFullAccess(props.fargateTaskRole);
   }
-}</code></pre>
-<p>先程書いたコードではただテーブルを作成するだけではなく、<code>table.grantFullAccess</code> で先程構築したFargateのタスクロールにDynamoDBのアクセス権限を付与する処理も行っているのでこのスタックをデプロイするだけでAPIでDynamoDBの操作をすることができるようになります。</p>
-<p>作成したスタックをCDKで呼び出すために、<code>cdk-handson/bin</code> ディレクトリ直下の <code>cdk-handson.ts</code> の一番下に以下のコードを追加します。</p>
-<pre><code>import { DatabaseStack } from &#39;../lib/handson-database-stack&#39;;
+}
+</code></pre>
+<p>こちらのコードではただテーブルを作成するだけではなく、<code>table.grantFullAccess</code> で先程構築したFargateのタスクロールにDynamoDBのアクセス権限を付与する処理も行っているのでこのコンストラクトを追加するだけでAPIでDynamoDBの操作をすることができるようになります。</p>
+<p>作成したコンストラクトをCDKで呼び出すために、 <code>lib/cdk-handson-stack.ts</code> の頭に＋がついている行を追加します。(＋は入れないでください！！)</p>
+<pre><code>import * as cdk from &#39;aws-cdk-lib&#39;;
+import { Construct } from &#39;constructs&#39;;
+import { ApiConstruct } from &#39;./constructs/api-construct&#39;;
++import { FrontendConstruct } from &#39;./constructs/frontend-construct&#39;;
 
-new DatabaseStack(app, &#39;CdkHandsonDatabaseStack&#39;, {
-  env: { region: &#39;ap-northeast-1&#39; },
-  tableName: tableName,
-  fargateTaskRole: apiStack.fargateTaskRole,
-});</code></pre>
+export class CdkHandsonStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    const tableName = &#39;cdk-handson-todo&#39;;
+
+    // API Construct
+    const api = new ApiConstruct(this, &#39;Api&#39;, {
+      tableName: tableName
+    })
+
++    // Database Construct
++    new DatabaseConstruct(this, &#39;Database&#39;, {
++      tableName: tableName,
++      fargateTaskRole: api.fargateTaskRole
++    })
+  }
+}
+</code></pre>
 <p>ここでは、先程作成したAPIスタックの中からFargateのタスクロールのオブジェクトを取得してDatabaseスタックにわたすようにすることで、DatabaseスタックでDynamoDBを操作するためのロールを追加することができるようになります。</p>
-<p>このように他のスタックで生成されたリソースを参照することができるのもCDKの魅力の一つです。</p>
+<p>このように他のスタックで生成されたリソースを参照することが直感的なのもCDKの魅力の一つです。</p>
 <h2 is-upgraded>差分確認</h2>
 <p>実際にデプロイを行う前にデプロイを実行するとどんなリソースが作成されるか差分を確認してみます。CDKでは既存のリソースとデプロイされてないリソースで差分を取れるように <code>diff</code> コマンドが用意されています。</p>
 <p>以下のコマンドを実行するとデプロイ済みのリソースとの差分を確認することができます。</p>
-<pre><code>npx cdk diff</code></pre>
+<pre><code>cdk diff</code></pre>
 <p>実行すると以下のように差分が表示されます。</p>
-<pre><code>Stack CdkHandsonDatabaseStack
-Parameters
-[+] Parameter BootstrapVersion BootstrapVersion: {&#34;Type&#34;:&#34;AWS::SSM::Parameter::Value&lt;String&gt;&#34;,&#34;Default&#34;:&#34;/cdk-bootstrap/hnb659fds/version&#34;,&#34;Description&#34;:&#34;Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]&#34;}
-
-Resources
-[+] AWS::DynamoDB::Table TodoTable TodoTable585F1D6B 
-
-Outputs
-[+] Output Exports/Output{&#34;Fn::GetAtt&#34;:[&#34;TodoTable&#34;,&#34;Arn&#34;]} ExportsOutputFnGetAttTodoTable: {&#34;Value&#34;:{&#34;Fn::GetAtt&#34;:[&#34;TodoTable585F1D6B&#34;,&#34;Arn&#34;]},&#34;Export&#34;:{&#34;Name&#34;:&#34;CdkHandsonDatabaseStack:ExportsOutputFnGetAttTodoTable758F1D6BArn&#34;}}
-
-Other Changes
-[+] Unknown Rules: {&#34;CheckBootstrapVersion&#34;:{&#34;Assertions&#34;:[{&#34;Assert&#34;:{&#34;Fn::Not&#34;:[{&#34;Fn::Contains&#34;:[[&#34;1&#34;,&#34;2&#34;,&#34;3&#34;,&#34;4&#34;,&#34;5&#34;],{&#34;Ref&#34;:&#34;BootstrapVersion&#34;}]}]},&#34;AssertDescription&#34;:&#34;CDK bootstrap stack version 6 required. Please run &#39;cdk bootstrap&#39; with a recent version of the CDK CLI.&#34;}]}}
-
-Stack CdkHandsonApiStack
+<pre><code>Stack CdkHandsonStack
 IAM Statement Changes
-┌───┬─────────────────────────────────────────────────────────────────────────────────────────────────┬────────┬────────────┬────────────────────────────────────────┬───────────┐
-│   │ Resource                                                                                        │ Effect │ Action     │ Principal                              │ Condition │
-├───┼──────────────────────────────────────────────────────────────────────────────────────────────────┼────────┼────────────┼───────────────────────────────────────┼───────────┤
-│ + │ {&#34;Fn::ImportValue&#34;:&#34;CdkHandsonDatabaseStack:ExportsOutputFnGetAttTodoTable585F1DJBArn55718354&#34;} │ Allow  │ dynamodb:* │ AWS:${FargateService/TaskDef/TaskRole} │           │
-└───┴─────────────────────────────────────────────────────────────────────────────────────────────────┴────────┴────────────┴────────────────────────────────────────┴───────────┘
+┌───┬───────────────────────────┬────────┬────────────┬────────────────────────────────────────────┬───────────┐
+│   │ Resource                  │ Effect │ Action     │ Principal                                  │ Condition │
+├───┼───────────────────────────┼────────┼────────────┼────────────────────────────────────────────┼───────────┤
+│ + │ ${Database/TodoTable.Arn} │ Allow  │ dynamodb:* │ AWS:${Api/FargateService/TaskDef/TaskRole} │           │
+└───┴───────────────────────────┴────────┴────────────┴────────────────────────────────────────────┴───────────┘
 (NOTE: There may be security-related changes not in this list. See https://github.com/aws/aws-cdk/issues/1299)
 
 Resources
-[+] AWS::IAM::Policy FargateService/TaskDef/TaskRole/DefaultPolicy FargateServiceTaskDefTaskRoleDefaultPolicy63F81F78 
+[+] AWS::IAM::Policy Api/FargateService/TaskDef/TaskRole/DefaultPolicy ApiFargateServiceTaskDefTaskRoleDefaultPolicyA030C29D
+[+] AWS::DynamoDB::Table Database/TodoTable DatabaseTodoTable3E2AC78E
+[~] AWS::ECS::Service Api/FargateService/Service/Service ApiFargateService536738D3
+ └─ [~] DependsOn
+     └─ @@ -1,5 +1,6 @@
+        [ ] [
+        [ ]   &#34;ApiFargateServiceLBPublicListenerA8805410&#34;,
+        [ ]   &#34;ApiFargateServiceLBPublicListenerECSGroupEB644372&#34;,
+        [-]   &#34;ApiFargateServiceTaskDefTaskRole64DE2B20&#34;
+        [+]   &#34;ApiFargateServiceTaskDefTaskRole64DE2B20&#34;,
+        [+]   &#34;ApiFargateServiceTaskDefTaskRoleDefaultPolicyA030C29D&#34;
+        [ ] ]
+[~] AWS::EC2::SecurityGroup Api/FargateService/Service/SecurityGroup ApiFargateServiceSecurityGroup57582F8D
+ └─ [~] DependsOn
+     └─ @@ -1,3 +1,4 @@
+        [ ] [
+        [-]   &#34;ApiFargateServiceTaskDefTaskRole64DE2B20&#34;
+        [+]   &#34;ApiFargateServiceTaskDefTaskRole64DE2B20&#34;,
+        [+]   &#34;ApiFargateServiceTaskDefTaskRoleDefaultPolicyA030C29D&#34;
+        [ ] ]
+[~] AWS::EC2::SecurityGroupIngress Api/FargateService/Service/SecurityGroup/from CdkHandsonStackApiFargateServiceLBSecurityGroup11220BEC:8000 ApiFargateServiceSecurityGroupfromCdkHandsonStackApiFargateServiceLBSecurityGroup11220BEC800079B34DEE
+ └─ [~] DependsOn
+     └─ @@ -1,3 +1,4 @@
+        [ ] [
+        [-]   &#34;ApiFargateServiceTaskDefTaskRole64DE2B20&#34;
+        [+]   &#34;ApiFargateServiceTaskDefTaskRole64DE2B20&#34;,
+        [+]   &#34;ApiFargateServiceTaskDefTaskRoleDefaultPolicyA030C29D&#34;
+        [ ] ]
+
+
+
+✨  Number of stacks with differences: 1
 </code></pre>
 <p>差分からDynamoDBのテーブルだけではなくFargateタスク用のDynamoDBのIAMポリシーがデプロイすると追加されることが確認できます。</p>
 <h2 is-upgraded>デプロイ</h2>
-<p>それでは、追加したスタックをデプロイします。以下のコマンドでDatabaseスタックをデプロイしていきます。Fargateのタスクロールも更新するため、ここではスタック単体で単体ではなく、<code>--all</code> オプションでスタック全体をデプロイできるようにします。</p>
-<pre><code>npx cdk deploy --all</code></pre>
-<p>デプロイ後以下のリソースが表示されたらデータベースのデプロイは完了です。</p>
-<pre><code> ✅  CdkHandsonDatabaseStack
+<p>それでは、更新したスタックをデプロイしていきます。以下のコマンドでデプロイを行います。</p>
+<pre><code>cdk deploy</code></pre>
+<p>デプロイ後以下の表示が出たら、デプロイは正常に成功しています。</p>
+<pre><code> ✅  CdkHandsonStack
 
 ✨  Deployment time: 35.54s
-
-Outputs:
-CdkHandsonDatabaseStack.ExportsOutputFnGetAttTodoTable585F1D6BArn557654A3 = arn:aws:dynamodb:ap-northeast-1:123456789000:table/handson-todo-table
-Stack ARN:
-arn:aws:cloudformation:ap-northeast-1123456789000:stack/CdkHandsonDatabaseStack/5398d7a1-befd-2201-a3f2-0e7dadf3f1c0
-✨  Total time: 41.68s</code></pre>
+</code></pre>
 <h2 is-upgraded>動作確認</h2>
 <p>デプロイが完了したので動作確認です。</p>
 <p>APIスタックの動作確認で使用したAPIドキュメントからAPIの動作確認をします。</p>
@@ -424,8 +491,8 @@ unzip todo-app.zip</code></pre>
 <p>展開して以下のように <code>cdk-handson</code> 配下に <code>todo-app</code> ディレクトリが作成されたら問題ありません。</p>
 <p class="image-container"><img style="width: 268.00px" src="img/6d3fd70ed5a6aa56.png"></p>
 <h2 is-upgraded>フロントエンドのモジュールをインストール</h2>
-<p>次の作業をする前にフロントエンドのモジュールをインストールします。 ターミナルを使い以下のコマンドで<code>cdk-handson/todo-app</code> ディレクトリに移動し、必要なモジュールをインストールします。</p>
-<pre><code>cd /workspace/gitpod-workspace/cdk-handson/todo-app
+<p>次の作業をする前にフロントエンドのモジュールをインストールします。 以下のコマンドで<code>todo-app</code> ディレクトリに移動し、必要なモジュールをインストールします。</p>
+<pre><code>cd todo-app
 yarn install</code></pre>
 <h2 is-upgraded>フロントエンドのビルド</h2>
 <p>フロントエンドにはReactを使用しており、CloudFrontで静的ファイルをホスティングするためにはビルドする必要があります。そしてビルドをする前に一つAPIスタックをデプロイした時にメモしたAPIエンドポイントを環境変数に設定する必要があります。</p>
@@ -435,44 +502,40 @@ yarn install</code></pre>
 <pre><code>yarn build</code></pre>
 <p>コマンド終了後に <code>todo-app</code> ディレクトリ上に <code>build</code> ディレクトリが作成されていたらビルドは正常に完了しています。</p>
 <p class="image-container"><img style="width: 280.00px" src="img/e7455d97d9dd363.png"></p>
-<h2 is-upgraded>Gitpod上で動作確認</h2>
-<p>デプロイ前にビルドが正常に完了しているのか確認するため、Gitpod上でビルドしたページが表示されるか確認します。</p>
-<p>ビルドしたページを表示するには以下のコマンドを実行します。</p>
-<pre><code>yarn serve</code></pre>
-<p>実行するとプレビュー用サーバーが立ち上がります。立ち上げると、エディタの右下に以下のダイアログが表示されると思うので、 <code>Open Preview</code> をクリックしてエディタ上でブラウザを起動します。</p>
-<p class="image-container"><img style="width: 453.00px" src="img/f99e1b894c5ad1cb.png"></p>
-<p>エディタ上のブラウザでTodo Listの画面が表示されたらビルドは成功です。画面に何も表示されない場合は、画面を開くタイミングの問題もあるのでリロードを試してください。何度リロードしても表示されない場合は、環境変数で設定しているAPIのエンドポイントに誤りがある可能性があるので環境変数の設定を確認してください。</p>
-<p class="image-container"><img style="width: 601.70px" src="img/6b38387596567547.png"></p>
-<p>無事に表示されたら、APIが設定されているのでテキストボックスになにかメッセージを入力して追加することもできますし、削除もできますので確認してみてもいいです。</p>
-<p>動作確認が終わったらプレビューサーバーを立ち上げているサーバーを <code>Ctrl + C</code> で終了します。</p>
-<p>これでデプロイ前の動作確認は完了です。</p>
-<h2 is-upgraded>フロントエンドを構築するスタックのコード</h2>
-<p><code>cdk-handson/lib</code> ディレクトリ内にフロントエンドのホスティングを構築するためのスタックを作成します。ファイル名は、 <code>handson-frontend-stack.ts</code> で以下のソースコードを書いて保存します。</p>
+<h2 is-upgraded>フロントエンドを構築するコンストラトのコード</h2>
+<p>以下のコマンドでコンストラクトのコードを新規作成します。</p>
+<pre><code>cd /home/ec2-user/cdk-handson
+touch lib/constructs/frontend-construct.ts</code></pre>
+<p><code>lib/constructs/frontend-construct.ts</code> に以下のコードを書いて保存します。</p>
 <pre><code>import * as cdk from &#39;aws-cdk-lib&#39;;
-import * as path from &#39;path&#39;;
 import { Construct } from &#39;constructs&#39;;
 import { Bucket } from &#39;aws-cdk-lib/aws-s3&#39;;
-import { CloudFrontWebDistribution, OriginAccessIdentity, PriceClass } from &#39;aws-cdk-lib/aws-cloudfront&#39;;
+import { Distribution, OriginAccessIdentity, PriceClass, ViewerProtocolPolicy } from &#39;aws-cdk-lib/aws-cloudfront&#39;;
+import { S3BucketOrigin } from &#39;aws-cdk-lib/aws-cloudfront-origins&#39;;
 import { Effect, PolicyStatement } from &#39;aws-cdk-lib/aws-iam&#39;;
 import { BucketDeployment, Source } from &#39;aws-cdk-lib/aws-s3-deployment&#39;;
 
+interface FrontendConstructProps extends cdk.StackProps {
+  apiEndpoint: string;
+}
 
-export class FrontendStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+export class FrontendConstruct extends Construct {
+  constructor(scope: Construct, id: string, props: FrontendConstructProps) {
+    super(scope, id);
 
     const webBucket = new Bucket(this, &#39;WebBucket&#39;, {
       websiteIndexDocument: &#39;index.html&#39;,
       websiteErrorDocument: &#39;index.html&#39;,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
-      autoDeleteObjects: true
+      autoDeleteObjects: true,
     });
-
+    
     // CloudFrontのOrigin Access Identityを作成する
     const websiteIdentify = new OriginAccessIdentity(this, &#39;WebsiteIdentify&#39;, {
       comment: &#39;Website identify for S3 bucket&#39;
     });
-
+    
+    
     // S3バケットへのアクセス権限を付与する
     const bucketPolicyStatement = new PolicyStatement({
       actions: [&#39;s3:GetObject&#39;],
@@ -481,31 +544,27 @@ export class FrontendStack extends cdk.Stack {
       principals: [websiteIdentify.grantPrincipal],
     });
     webBucket.addToResourcePolicy(bucketPolicyStatement);
-  
-    const webDistribution = new CloudFrontWebDistribution(this, &#39;WebDistribution&#39;, {
-      originConfigs: [
+
+    const webDistribution = new Distribution(this, &#39;WebDistribution&#39;, {
+      defaultBehavior: {
+        origin: S3BucketOrigin.withOriginAccessIdentity(webBucket, {
+          originAccessIdentity: websiteIdentify,
+        }),
+        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      },
+      defaultRootObject: &#39;index.html&#39;,
+      errorResponses: [
         {
-          s3OriginSource: {
-            s3BucketSource: webBucket,
-            originAccessIdentity: websiteIdentify,
-          },
-          behaviors: [{ 
-            isDefaultBehavior: true
-          }],
-        }
-      ],
-      errorConfigurations: [
-        {
-          errorCode: 404,
-          responseCode: 200,
-          errorCachingMinTtl: 300,
+          httpStatus: 404,
+          responseHttpStatus: 200,
           responsePagePath: &#39;/index.html&#39;,
+          ttl: cdk.Duration.minutes(5),
         },
         {
-          errorCode: 403,
-          responseCode: 200,
-          errorCachingMinTtl: 300,
+          httpStatus: 403,
+          responseHttpStatus: 200,
           responsePagePath: &#39;/index.html&#39;,
+          ttl: cdk.Duration.minutes(5),
         }
       ],
       priceClass: PriceClass.PRICE_CLASS_ALL,
@@ -513,7 +572,7 @@ export class FrontendStack extends cdk.Stack {
 
     // S3バケットにビルドしたフロントエンドのファイルをデプロイする
     new BucketDeployment(this, &#39;DeployWebsite&#39;, {
-      sources: [Source.asset(path.join(__dirname, &#39;../todo-app/build&#39;))],
+      sources: [Source.asset(&#39;./todo-app/build&#39;)],
       destinationBucket: webBucket,
       distribution: webDistribution,
       distributionPaths: [&#39;/*&#39;],
@@ -527,55 +586,127 @@ export class FrontendStack extends cdk.Stack {
 }
 </code></pre>
 <p>このコードでCloudFrontのホスティング設定と先ほどビルドしたフロントエンドのコードを格納しておくS3の設定をするだけではなくファイルをS3にアップロードする処理も入っているので、このスタックをデプロイするだけでWebページを表示できるようになります。</p>
-<p>作成したスタックをCDKで呼び出すために、<code>cdk-handson/bin</code> ディレクトリ直下の <code>cdk-handson.ts</code> の一番下に以下のコードを追加します。</p>
-<pre><code>import { FrontendStack } from &#39;../lib/handson-frontend-stack&#39;;
+<p>作成したコンストラクトをCDKで呼び出すために、 <code>lib/cdk-handson-stack.ts</code> の頭に＋がついている行を追加します。(＋は入れないでください！！)</p>
+<pre><code>import * as cdk from &#39;aws-cdk-lib&#39;;
+import { Construct } from &#39;constructs&#39;;
+import { ApiConstruct } from &#39;./constructs/api-construct&#39;;
+import { DatabaseConstruct } from &#39;./constructs/database-construct&#39;;
++import { FrontendConstruct } from &#39;./constructs/frontend-construct&#39;;
 
-new FrontendStack(app, &#39;CdkHandsonFrontendStack&#39;, {
-  env: { region: &#39;ap-northeast-1&#39; },
-});
+export class CdkHandsonStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    const tableName = &#39;cdk-handson-todo&#39;;
+
+    // API Construct
+    const api = new ApiConstruct(this, &#39;Api&#39;, {
+      tableName: tableName
+    })
+
+    // Database Construct
+    new DatabaseConstruct(this, &#39;Database&#39;, {
+      tableName: tableName,
+      fargateTaskRole: api.fargateTaskRole
+    })
+
++    // Frontend Construct
++    new FrontendConstruct(this, &#39;Frontend&#39;, {
++      apiEndpoint: api.apiEndpoint
++    })
+  }
+}
 </code></pre>
 <h2 is-upgraded>差分確認</h2>
 <p>これでスタックを追加できたので、構築されるサービスを確認してみます。以下のコマンドで作業ディレクトリを変更して、デプロイされているサービスとの差分を確認します。</p>
-<pre><code>cd /workspace/gitpod-workspace/cdk-handson
-npx cdk diff</code></pre>
+<pre><code>cdk diff</code></pre>
 <p>実行すると以下のように、作成されるリソースが一覧で表示されたら問題ありません。</p>
-<pre><code>Parameters
-[+] Parameter BootstrapVersion BootstrapVersion: {&#34;Type&#34;:&#34;AWS::SSM::Parameter::Value&lt;String&gt;&#34;,&#34;Default&#34;:&#34;/cdk-bootstrap/hnb659fds/version&#34;,&#34;Description&#34;:&#34;Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]&#34;}
+<pre><code>Stack CdkHandsonStack
+IAM Statement Changes
+┌───┬──────────────────────────────────────────────────────────────────────────────────────────────────┬────────┬───────────────────────────────┬────────────────────────────────────────────────────────────────────────────────┬───────────┐
+│   │ Resource                                                                                         │ Effect │ Action                        │ Principal                                                                      │ Condition │
+├───┼──────────────────────────────────────────────────────────────────────────────────────────────────┼────────┼───────────────────────────────┼────────────────────────────────────────────────────────────────────────────────┼───────────┤
+│ + │ ${Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/ServiceRole.Arn}                   │ Allow  │ sts:AssumeRole                │ Service:lambda.amazonaws.com                                                   │           │
+├───┼──────────────────────────────────────────────────────────────────────────────────────────────────┼────────┼───────────────────────────────┼────────────────────────────────────────────────────────────────────────────────┼───────────┤
+│ + │ ${Custom::S3AutoDeleteObjectsCustomResourceProvider/Role.Arn}                                    │ Allow  │ sts:AssumeRole                │ Service:lambda.amazonaws.com                                                   │           │
+├───┼──────────────────────────────────────────────────────────────────────────────────────────────────┼────────┼───────────────────────────────┼────────────────────────────────────────────────────────────────────────────────┼───────────┤
+│ + │ ${Frontend/WebBucket.Arn}                                                                        │ Allow  │ s3:DeleteObject*              │ AWS:${Custom::S3AutoDeleteObjectsCustomResourceProvider/Role.Arn}              │           │
+│   │ ${Frontend/WebBucket.Arn}/*                                                                      │        │ s3:GetBucket*                 │                                                                                │           │
+│   │                                                                                                  │        │ s3:List*                      │                                                                                │           │
+│   │                                                                                                  │        │ s3:PutBucketPolicy            │                                                                                │           │
+│ + │ ${Frontend/WebBucket.Arn}                                                                        │ Allow  │ s3:Abort*                     │ AWS:${Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/ServiceRole} │           │
+│   │ ${Frontend/WebBucket.Arn}/*                                                                      │        │ s3:DeleteObject*              │                                                                                │           │
+│   │                                                                                                  │        │ s3:GetBucket*                 │                                                                                │           │
+│   │                                                                                                  │        │ s3:GetObject*                 │                                                                                │           │
+│   │                                                                                                  │        │ s3:List*                      │                                                                                │           │
+│   │                                                                                                  │        │ s3:PutObject                  │                                                                                │           │
+│   │                                                                                                  │        │ s3:PutObjectLegalHold         │                                                                                │           │
+│   │                                                                                                  │        │ s3:PutObjectRetention         │                                                                                │           │
+│   │                                                                                                  │        │ s3:PutObjectTagging           │                                                                                │           │
+│   │                                                                                                  │        │ s3:PutObjectVersionTagging    │                                                                                │           │
+├───┼──────────────────────────────────────────────────────────────────────────────────────────────────┼────────┼───────────────────────────────┼────────────────────────────────────────────────────────────────────────────────┼───────────┤
+│ + │ ${Frontend/WebBucket.Arn}/*                                                                      │ Allow  │ s3:GetObject                  │ CanonicalUser:${Frontend/WebsiteIdentify.S3CanonicalUserId}                    │           │
+├───┼──────────────────────────────────────────────────────────────────────────────────────────────────┼────────┼───────────────────────────────┼────────────────────────────────────────────────────────────────────────────────┼───────────┤
+│ + │ *                                                                                                │ Allow  │ cloudfront:CreateInvalidation │ AWS:${Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/ServiceRole} │           │
+│   │                                                                                                  │        │ cloudfront:GetInvalidation    │                                                                                │           │
+├───┼──────────────────────────────────────────────────────────────────────────────────────────────────┼────────┼───────────────────────────────┼────────────────────────────────────────────────────────────────────────────────┼───────────┤
+│ + │ arn:${AWS::Partition}:s3:::{&#34;Fn::Sub&#34;:&#34;cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}&#34;}   │ Allow  │ s3:GetBucket*                 │ AWS:${Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/ServiceRole} │           │
+│   │ arn:${AWS::Partition}:s3:::{&#34;Fn::Sub&#34;:&#34;cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}&#34;}/* │        │ s3:GetObject*                 │                                                                                │           │
+│   │                                                                                                  │        │ s3:List*                      │                                                                                │           │
+└───┴──────────────────────────────────────────────────────────────────────────────────────────────────┴────────┴───────────────────────────────┴────────────────────────────────────────────────────────────────────────────────┴───────────┘
+IAM Policy Changes
+┌───┬────────────────────────────────────────────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────────────────────┐
+│   │ Resource                                                                   │ Managed Policy ARN                                                                           │
+├───┼────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────┤
+│ + │ ${Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/ServiceRole} │ arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole               │
+├───┼────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────┤
+│ + │ ${Custom::S3AutoDeleteObjectsCustomResourceProvider/Role}                  │ {&#34;Fn::Sub&#34;:&#34;arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole&#34;} │
+└───┴────────────────────────────────────────────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────┘
+(NOTE: There may be security-related changes not in this list. See https://github.com/aws/aws-cdk/issues/1299)
 
 Resources
-[+] AWS::S3::Bucket WebBucket WebBucket12880F5B 
-[+] AWS::S3::BucketPolicy WebBucket/Policy WebBucketPolicy95D08FAA 
-[+] AWS::CloudFront::CloudFrontOriginAccessIdentity WebsiteIdentify WebsiteIdentifyC086C1F5 
-[+] AWS::CloudFront::Distribution WebDistribution/CFDistribution WebDistributionCFDistributionFD4FCA33 
-[+] AWS::Lambda::LayerVersion DeployWebsite/AwsCliLayer DeployWebsiteAwsCliLayer17DBC421 
-[+] Custom::CDKBucketDeployment DeployWebsite/CustomResource DeployWebsiteCustomResourceD116527B 
-[+] AWS::IAM::Role Custom::CDKBucketDeployment8693BB64968944BAAA23821EDC/ServiceRole CustomCDKBucketDeployment8693BB64968944B69AAFB0892ED756CServiceRole89A01265 
-[+] AWS::IAM::Policy Custom::CDKBucketDeployment8693BB64968944B69AAFB0CCEXAMPLE/ServiceRole/DefaultPolicy CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRoleDefaultPolicyEXAMPLE 
-[+] AWS::Lambda::Function Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EXAMPLE CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EBIE32864 
+[+] AWS::S3::Bucket Frontend/WebBucket FrontendWebBucket9FD9DE48
+[+] AWS::S3::BucketPolicy Frontend/WebBucket/Policy FrontendWebBucketPolicy7FC230BF
+[+] Custom::S3AutoDeleteObjects Frontend/WebBucket/AutoDeleteObjectsCustomResource FrontendWebBucketAutoDeleteObjectsCustomResourceFAF75BDB
+[+] AWS::CloudFront::CloudFrontOriginAccessIdentity Frontend/WebsiteIdentify FrontendWebsiteIdentify80BCE072
+[+] AWS::CloudFront::Distribution Frontend/WebDistribution FrontendWebDistributionD3004381
+[+] AWS::Lambda::LayerVersion Frontend/DeployWebsite/AwsCliLayer FrontendDeployWebsiteAwsCliLayer326338BB
+[+] Custom::CDKBucketDeployment Frontend/DeployWebsite/CustomResource FrontendDeployWebsiteCustomResource2518064E
+[+] AWS::IAM::Role Custom::S3AutoDeleteObjectsCustomResourceProvider/Role CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092
+[+] AWS::Lambda::Function Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F
+[+] AWS::IAM::Role Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/ServiceRole CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRole89A01265
+[+] AWS::IAM::Policy Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/ServiceRole/DefaultPolicy CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRoleDefaultPolicy88902FDF
+[+] AWS::Lambda::Function Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C81C01536
+[+] AWS::Logs::LogGroup Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/LogGroup CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CLogGroup817B64E9
 
 Outputs
-[+] Output CloudFrontURL CloudFrontURL: {&#34;Value&#34;:{&#34;Fn::Join&#34;:[&#34;&#34;,[&#34;https://&#34;,{&#34;Fn::GetAtt&#34;:[&#34;WebDistributionCFDistributionFD4FCA33&#34;,&#34;DomainName&#34;]}]]}}
+[+] Output Frontend/CloudFrontURL FrontendCloudFrontURL34A48BD2: {&#34;Value&#34;:{&#34;Fn::Join&#34;:[&#34;&#34;,[&#34;https://&#34;,{&#34;Fn::GetAtt&#34;:[&#34;FrontendWebDistributionD3004381&#34;,&#34;DomainName&#34;]}]]}}
 
-Other Changes
-[+] Unknown Rules: {&#34;CheckBootstrapVersion&#34;:{&#34;Assertions&#34;:[{&#34;Assert&#34;:{&#34;Fn::Not&#34;:[{&#34;Fn::Contains&#34;:[[&#34;1&#34;,&#34;2&#34;,&#34;3&#34;,&#34;4&#34;,&#34;5&#34;],{&#34;Ref&#34;:&#34;BootstrapVersion&#34;}]}]},&#34;AssertDescription&#34;:&#34;CDK bootstrap stack version 6 required. Please run &#39;cdk bootstrap&#39; with a recent version of the CDK CLI.&#34;}]}}
+
+
+✨  Number of stacks with differences: 1
 
 </code></pre>
 <h2 is-upgraded>デプロイ</h2>
 <p>いよいよデプロイを行います。今回はフロントエンドのスタックをデプロイするだけなので以下のコマンドでスタック名を指定してデプロイします。</p>
-<pre><code>npx cdk deploy CdkHandsonFrontendStack</code></pre>
+<pre><code>cdk deploy</code></pre>
 <p>これまでと同様にデプロイされるリソースの一覧が表示されて以下の確認が表示されるので <code>y</code> と入力して <code>Enter</code> を入力します。</p>
 <pre><code>Do you wish to deploy these changes (y/n)? </code></pre>
 <p>しばらく待つと以下のようにCloudFrontのURLが出力で表示されたらデプロイは完了です。</p>
-<pre><code> ✅  CdkHandsonFrontendStack (no changes)
+<pre><code> ✅  CdkHandsonStack
 
-✨  Deployment time: 12.48s
+✨  Deployment time: 310.52s
 
 Outputs:
-CdkHandsonFrontendStack.CloudFrontURL = https://handsonsample.cloudfront.net
+CdkHandsonStack.ApiApiEndpointE2C5D803 = https://ezoyc99b6b.execute-api.ap-northeast-1.amazonaws.com
+CdkHandsonStack.ApiFargateServiceLoadBalancerDNSA0713F2C = CdkHan-ApiFa-jMa7BHEGxQ5a-12345678.ap-northeast-1.elb.amazonaws.com
+CdkHandsonStack.ApiFargateServiceServiceURL303D0D20 = http://CdkHan-ApiFa-jMa7BHEGxQ5a-12345678.ap-northeast-1.elb.amazonaws.com
+CdkHandsonStack.FrontendCloudFrontURL34A48BD2 = https://das0npkmubaka.cloudfront.net
 Stack ARN:
-arn:aws:cloudformation:ap-northeast-1:123456789000:stack/CdkHandsonFrontendStack/86a9d760-ad50-11ed-b5c7-0ecba1d4f00d
+arn:aws:cloudformation:ap-northeast-1:123456789012:stack/CdkHandsonStack/a2c48010-8ced-11f0-b769-0a0830b6a99d
 
-✨  Total time: 20.31s
+✨  Total time: 322.83s
+
 </code></pre>
 <h2 is-upgraded>動作確認</h2>
 <p>デプロイができたところで動作確認です。先程スタックをデプロイしたときの出力にあった、 <code>CdkHandsonFrontendStack.CloudFrontURL</code> の値にあるCloudFrontのURLをブラウザで開いて以下のようにTodoアプリが表示されたらフロントエンドのデプロイは正常に完了です。</p>
@@ -590,24 +721,25 @@ arn:aws:cloudformation:ap-northeast-1:123456789000:stack/CdkHandsonFrontendStack
         <p>最後にハンズオンの片付けを行います。このハンズオンでは有料のサービスが使われているため、放置しておくとかなりの金額になるので忘れずに片付けを行いましょう。</p>
 <h2 is-upgraded>CDKで構築したリソースの削除</h2>
 <p>CDKで構築したリソースは以下のコマンドですべて削除することができます。</p>
-<pre><code>npx cdk destroy --all </code></pre>
-<p>もし、タイムアウトで削除に失敗する場合は先にフロントエンドのスタックを削除してから残りのスタックを削除すると成功します(APIスタックとデータベーススタックは連携しているので必ず同時に削除されます)。</p>
-<pre><code>npx cdk destroy CdkHandsonFrontendStack
-npx cdk destroy --all</code></pre>
+<pre><code>cdk destroy</code></pre>
 <p>最終的に以下のように表示されたらリソースの削除は完了です</p>
-<pre><code>CdkHandsonApiStack: destroying... [1/3]
+<pre><code>CdkHandsonStack: destroying... [1/1]
 
- ✅  CdkHandsonApiStack: destroyed
-CdkHandsonFrontendStack: destroying... [2/3]
-
- ✅  CdkHandsonFrontendStack: destroyed
-CdkHandsonDatabaseStack: destroying... [3/3]
-
- ✅  CdkHandsonDatabaseStack: destroyed
+ ✅  CdkHandsonStack: destroyed
 </code></pre>
+<h2 is-upgraded>code-serverを削除</h2>
+<p>続いて、EC2で立てたcode-serverを削除していきます。CloudFormationから削除できますが、CloudFormationをデプロイするときに使用したスクリプトに削除するためのオプションも用意しています。</p>
+<p>CloudShellを開き、以下のコマンドでcode-serverのスタックを削除することが出来ます。</p>
+<pre><code>cd /home/cloudshell-user/ec2-code-server
+./deploy.sh delete</code></pre>
+<p>プロンプトで確認の表示がでるので、 <code>y</code> を入力します。その後、以下の表示が出たら削除の処理が実行されています。</p>
+<pre><code>[INFO] Stack deletion initiated</code></pre>
+<p>スタックの状況は以下のコマンドを実行することで確認できます。 実行結果が <code>Stack not found</code> と表示されていればスタックは正常に削除されています。</p>
+<pre><code>./deploy.sh status</code></pre>
 <h2 is-upgraded>Bootstrapで作成されたアセットの削除(CDKを使っている方は削除しないでください)</h2>
 <p>今回のハンズオンのときにBootstrapで作成したアセットは残しててもお金がかかることはありませんが整理のために削除しておくといいです。アセットを保存しているリソースはCloudFormationでまとめて削除できますが、リソースの中身を削除しないとエラーになるので予め削除してからリソースを一括で削除するので順番に削除していきます。</p>
-<p>ただし、CDKを使う予定がある方や現在CDKを使っている方は次にCDKを使うときにエラーになるので絶対に削除しないでください。</p>
+<aside class="warning"><p>CDKを使う予定がある方や現在CDKを使っている方は次にCDKを使うときにエラーになるので絶対にアセットを削除しないでください。</p>
+</aside>
 <h3 is-upgraded>ECRの中身を削除</h3>
 <p>AWSのコンソールでECRを開き Repositoriesをクリックします。</p>
 <p class="image-container"><img style="width: 601.70px" src="img/c524c1f74bc60a6.png"></p>
@@ -619,19 +751,13 @@ CdkHandsonDatabaseStack: destroying... [3/3]
 <h3 is-upgraded>S3の中身を削除</h3>
 <p>続いてS3のアセットを削除します。</p>
 <p>AWSのコンソールから <code>cdk-</code> から始まるバケットを選択して【空にする】を選択します。</p>
-<p class="image-container"><img style="width: 601.70px" src="img/bc3c61f5064f563c.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/fb03e3145106e295.png"></p>
 <p>これでS3のアセットの削除は完了です。</p>
 <h3 is-upgraded>CloudFormationでスタックを削除</h3>
 <p>最後にCloudFormationでCDKに使われていたスタックを削除していきます。AWSのコンソール画面からCloudFormationを開き、 <code>CDKToolkit</code> を選択して【削除】をクリックします。</p>
-<p class="image-container"><img style="width: 601.70px" src="img/611acca3a6f21d39.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/161186b54332030.png"></p>
 <p>リロードボタンを押して、CDKToolkitの表示が消えたらスタックの削除は完了です。</p>
 <p class="image-container"><img style="width: 601.70px" src="img/4e4c53d4400fe81c.png"></p>
-<h2 is-upgraded>Gitpodのインスタンスの削除</h2>
-<p>Gitpodはフリープランであればインスタンスが止まるだけで請求は来ないのでハンズオンの復習をするために残してもいいですし、削除したい場合は <a href="https://gitpod.io/workspaces" target="_blank">https://gitpod.io/workspaces</a> から削除することができます。</p>
-<p>タイムアウトをするとワークスペース内のコードは残りますが、AWSのクレデンシャルは削除されるのでタイムアウトから再度立ち上げたら <code>aws configure</code> を実行する必要があります。</p>
-<p class="image-container"><img style="width: 601.70px" src="img/e5584624f3714d6.png"> </p>
-<h2 is-upgraded>IAMアクセスキーの削除</h2>
-<p>今回使用したIAMのアクセスキーには AdministratorAccessのポリシーがアタッチされているのでハンズオン終了後は削除しておくと安全です。</p>
 <h2 is-upgraded>まとめ</h2>
 <p>今回はCDKを使用してAWS上で動作するアプリケーションを構築していく流れを体験していただきました。CDKを使うことでAWSのコンソールを開かなくてもアプリケーションの構築が簡単にできることがお分かりいただけたと思います。</p>
 <p>CDKはコードでAWSのリソースを定義するだけではなく、アプリケーションのデプロイをサポートする機能も充実しているので使いこなすことでかなり開発効率が上がります。</p>
