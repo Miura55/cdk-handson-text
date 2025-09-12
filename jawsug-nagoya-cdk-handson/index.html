@@ -483,7 +483,7 @@ Resources
       </google-codelab-step>
     
       <google-codelab-step label="Step3. フロントエンドのデプロイ" duration="0">
-        <p>このハンズオンの最後のステップとしてフロントエンドをデプロイするためのスタックを作成していきます。フロントエンドの表示にはS3にフロントエンドのコードを格納してCloudFrontでホスティングしていきます。</p>
+        <p>このハンズオンの最後のステップとしてフロントエンドをデプロイするためのコンストラクトを作成していきます。フロントエンドの表示にはS3にフロントエンドのコードを格納してCloudFrontでホスティングしていきます。</p>
 <h2 is-upgraded>ソースコードをダウンロード</h2>
 <p>前のページで作成したCDKアプリのディレクトリ( <code>cdk-handson</code> )上で以下のコマンドを実行してAPIのソースコードをダウンロードして展開します。</p>
 <pre><code>wget -O todo-app.zip https://github.com/Miura55/jawsug-nagoya-cdk-handson/releases/download/v1.0.0/todo-app-asset-v1.0.0.zip
@@ -495,7 +495,7 @@ unzip todo-app.zip</code></pre>
 <pre><code>cd todo-app
 yarn install</code></pre>
 <h2 is-upgraded>フロントエンドのビルド</h2>
-<p>フロントエンドにはReactを使用しており、CloudFrontで静的ファイルをホスティングするためにはビルドする必要があります。そしてビルドをする前に一つAPIスタックをデプロイした時にメモしたAPIエンドポイントを環境変数に設定する必要があります。</p>
+<p>フロントエンドにはReactを使用しており、CloudFrontで静的ファイルをホスティングするためにはビルドする必要があります。このとき、APIをデプロイした時にメモしたAPI Gatewayのエンドポイントを環境変数に設定する必要があります。</p>
 <p>ビルドする時に使う環境変数は <code>cdk-handson/todo-app</code> 内の <code>.env.production.local</code> に以下の変更を加えます。</p>
 <pre><code>VITE_API_ENDPOINT=【APIスタックで作成したエンドポイント】</code></pre>
 <p>これでビルドするための準備ができたので、<code>cdk-handson/todo-app</code> 上で以下のコマンドでビルドを実行します。</p>
@@ -585,7 +585,7 @@ export class FrontendConstruct extends Construct {
   }
 }
 </code></pre>
-<p>このコードでCloudFrontのホスティング設定と先ほどビルドしたフロントエンドのコードを格納しておくS3の設定をするだけではなくファイルをS3にアップロードする処理も入っているので、このスタックをデプロイするだけでWebページを表示できるようになります。</p>
+<p>このコードでCloudFrontのホスティング設定と先ほどビルドしたフロントエンドのコードを格納しておくS3の設定をするだけではなく、ファイルをS3にアップロードする処理も入っているので、このコンストラクトを追加するだけでWebページを表示できるようになります。</p>
 <p>作成したコンストラクトをCDKで呼び出すために、 <code>lib/cdk-handson-stack.ts</code> の頭に＋がついている行を追加します。(＋は入れないでください！！)</p>
 <pre><code>import * as cdk from &#39;aws-cdk-lib&#39;;
 import { Construct } from &#39;constructs&#39;;
@@ -688,7 +688,7 @@ Outputs
 
 </code></pre>
 <h2 is-upgraded>デプロイ</h2>
-<p>いよいよデプロイを行います。今回はフロントエンドのスタックをデプロイするだけなので以下のコマンドでスタック名を指定してデプロイします。</p>
+<p>いよいよデプロイを行います。以下のコマンドで作成したスタックをデプロイします。</p>
 <pre><code>cdk deploy</code></pre>
 <p>これまでと同様にデプロイされるリソースの一覧が表示されて以下の確認が表示されるので <code>y</code> と入力して <code>Enter</code> を入力します。</p>
 <pre><code>Do you wish to deploy these changes (y/n)? </code></pre>
@@ -718,7 +718,7 @@ arn:aws:cloudformation:ap-northeast-1:123456789012:stack/CdkHandsonStack/a2c4801
       </google-codelab-step>
     
       <google-codelab-step label="片付け" duration="0">
-        <p>最後にハンズオンの片付けを行います。このハンズオンでは有料のサービスが使われているため、放置しておくとかなりの金額になるので忘れずに片付けを行いましょう。</p>
+        <p>最後にハンズオンの片付けを行います。 このハンズオンでは有料のサービスが使われているため、放置しておくとかなりの金額になるので、ハンズオン終了後に忘れずに片付けを行いましょう。</p>
 <h2 is-upgraded>CDKで構築したリソースの削除</h2>
 <p>CDKで構築したリソースは以下のコマンドですべて削除することができます。</p>
 <pre><code>cdk destroy</code></pre>
